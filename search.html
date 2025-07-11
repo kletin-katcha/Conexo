@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorar - Conectare</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Seu arquivo de estilo principal existente -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Estilos personalizados para search.html que não estão em style.css ou são overrides específicos */
+
+        /* Ajusta a margem do conteúdo principal quando a sidebar expande */
+        .sidebar:hover ~ .content-explore {
+            margin-left: 224px; /* 56 (w-56) * 4px/unit = 224px para sidebar expandida */
+        }
+
+        /* Barra de Pesquisa */
+        .search-input-container {
+            position: relative;
+            margin-bottom: 1.5rem; /* Equivalente a mb-6 */
+        }
+        .search-input-container i {
+            position: absolute;
+            left: 1rem; /* Equivalente a left-4 */
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af; /* text-gray-400 */
+        }
+        .dark-theme .search-input-container i {
+            color: #6b7280; /* text-gray-500 */
+        }
+        .search-input-container input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem; /* pl-12 pr-4 py-3 */
+            border-radius: 9999px; /* rounded-full */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            background-color: #ffffff; /* bg-white */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-input-container input:focus {
+            border-color: #6366f1; /* focus:ring-indigo-500 */
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5); /* focus:ring-indigo-500 */
+        }
+        .dark-theme .search-input-container input {
+            background-color: #374151; /* bg-gray-700 */
+            border-color: #4b5563; /* border-gray-600 */
+            color: #f3f4f6; /* text-gray-100 */
+        }
+
+
+        /* Abas */
+        .tabs-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border-light); /* Borda sutil na parte inferior */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        .dark-theme .tabs-nav {
+            border-bottom-color: var(--border-dark);
+        }
+        .tab-link {
+            padding: 0.5rem 1rem; /* Reduz o padding para um visual mais compacto */
+            font-size: 1.1rem; /* Ajusta o tamanho da fonte */
+            font-weight: 500; /* Menos negrito para o estado padrão */
+            color: var(--text-secondary-light); /* Cor de texto secundária para inativo */
+            position: relative;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.2s;
+        }
+        .dark-theme .tab-link {
+            color: var(--text-secondary-dark);
+        }
+        .tab-link:hover {
+            color: var(--accent-hover-light); /* Cor de destaque no hover */
+        }
+        .dark-theme .tab-link:hover {
+            color: var(--accent-hover-dark);
+        }
+        .tab-link.active {
+            color: var(--accent-light); /* Cor de destaque para o estado ativo */
+            font-weight: 700; /* Mais negrito para o estado ativo */
+        }
+        .dark-theme .tab-link.active {
+            color: var(--accent-dark);
+        }
+        .tab-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0.15rem; /* Linha mais fina para o indicador */
+            background-color: var(--accent-light); /* Cor de destaque para a linha */
+            border-radius: 0.25rem; /* Mantém as bordas arredondadas */
+        }
+        .dark-theme .tab-link.active::after {
+            background-color: var(--accent-dark);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Grid de Conteúdo - Ajustado para um layout mais dinâmico e preenchido */
+        .content-grid {
+            display: grid;
+            gap: 1rem; /* gap-4 */
+            /* Define colunas flexíveis, permitindo que os itens se ajustem */
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-auto-rows: minmax(150px, auto); /* Linhas com altura mínima e auto ajustável */
+        }
+
+        .grid-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex; /* Garante que a imagem preencha o item */
+        }
+        .grid-item:hover {
+            transform: scale(1.02); /* Efeito de zoom mais sutil */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+        }
+        .grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        /* Ajustes para tamanhos de itens para um layout mais preenchido */
+        /* REMOVIDO: .grid-item.wide */
+        /* REMOVIDO: .grid-item.tall */
+        /* REMOVIDO: .grid-item.large */
+
+        /* Overlay para texto em imagens */
+        .grid-item-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent); /* bg-gradient-to-t from-black/70 to-transparent */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-start;
+            padding: 1rem; /* p-4 */
+            color: #ffffff; /* text-white */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .grid-item:hover .grid-item-overlay {
+            opacity: 1;
+        }
+        .grid-item-overlay h3 {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700; /* font-bold */
+        }
+        .grid-item-overlay p {
+            font-size: 0.875rem; /* text-sm */
+        }
+
+        /* Card de Usuário (para aba Pessoas) */
+        /* Ajustes para alinhar lado a lado em um grid */
+        .user-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Ajustado para 300px para mais espaço */
+            gap: 1rem; /* gap-4 */
+        }
+
+        .user-card {
+            display: flex;
+            flex-direction: column; /* Altera para coluna para melhor layout em grid */
+            align-items: center;
+            padding: 1.5rem; /* p-6 para mais padding */
+            background-color: #ffffff; /* bg-white */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            text-align: center; /* Centraliza o texto */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .dark-theme .user-card {
+            background-color: #1f2937; /* bg-gray-800 */
+        }
+        .user-card:hover {
+            transform: translateY(-5px); /* Efeito de elevação ao passar o mouse */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .user-card img {
+            width: 5rem; /* w-20 para avatares maiores */
+            height: 5rem; /* h-20 */
+            border-radius: 9999px; /* rounded-full */
+            margin-bottom: 1rem; /* mb-4 */
+            object-fit: cover;
+            border: 3px solid var(--accent-light); /* Borda colorida para destaque */
+            box-shadow: 0 0 0 2px rgba(var(--accent-light-rgb), 0.3); /* Sombra suave na borda */
+        }
+        .dark-theme .user-card img {
+            border-color: var(--accent-dark);
+            box-shadow: 0 0 0 2px rgba(var(--accent-dark-rgb), 0.3);
+        }
+
+        .user-info {
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        .user-info h3 {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700; /* font-bold */
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+        .user-info p {
+            font-size: 0.9rem; /* text-sm */
+            color: #6b7280; /* text-gray-500 */
+        }
+        .dark-theme .user-info p {
+            color: #9ca3af; /* text-gray-400 */
+        }
+        .user-card button {
+            width: 80%; /* Largura do botão ajustada */
+            padding: 0.6rem 1.2rem; /* px-5 py-2.5 */
+            background-color: var(--accent-light);
+            color: #ffffff; /* text-white */
+            border-radius: 9999px; /* rounded-full */
+            font-size: 0.9rem; /* text-sm */
+            font-weight: 600; /* font-medium */
+            transition: background-color 0.2s, transform 0.1s ease-in-out;
+            border: none; /* Remove a borda padrão */
+        }
+        .dark-theme .user-card button {
+            background-color: var(--accent-dark);
+        }
+        .user-card button:hover {
+            background-color: var(--accent-hover-light);
+            transform: translateY(-2px); /* Pequeno efeito de elevação no hover */
+        }
+        .dark-theme .user-card button:hover {
+            background-color: var(--accent-hover-dark);
+        }
+        .user-card button.following {
+            background-color: #e5e7eb; /* bg-gray-200 */
+            color: #374151; /* text-gray-700 */
+        }
+        .user-card button.following:hover {
+            background-color: #d1d5db; /* hover:bg-gray-300 */
+            transform: translateY(0); /* Remove o efeito de elevação no hover para "Seguindo" */
+        }
+        .dark-theme .user-card button.following {
+            background-color: #374151; /* bg-gray-700 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        .dark-theme .user-card button.following:hover {
+            background-color: #4b5563; /* hover:bg-gray-600 */
+        }
+
+        /* Card de Mídia (para abas Vídeos/Músicas) */
+        .media-card {
+            background-color: #ffffff; /* bg-white */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            overflow: hidden;
+        }
+        .dark-theme .media-card {
+            background-color: #1f2937; /* bg-gray-800 */
+        }
+        .media-card img {
+            width: 100%;
+            height: 10rem; /* h-40 */
+            object-fit: cover;
+        }
+        .media-content {
+            padding: 1rem; /* p-4 */
+        }
+        .media-content h3 {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+        .media-content p {
+            font-size: 0.875rem; /* text-sm */
+            color: #6b7280; /* text-gray-500 */
+        }
+        .dark-theme .media-content p {
+            color: #9ca3af; /* text-gray-400 */
+        }
+    </style>
+</head>
+<body class="light-theme">
+
+    <div class="main-wrapper flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="feed.html" class="logo">
+                    <i class="fa-solid fa-meteor"></i>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="feed.html" class="nav-link" title="Início">
+                    <i class="fa-solid fa-house-chimney"></i>
+                    <span class="nav-text">Início</span>
+                </a>
+                <a href="search.html" class="nav-link active" title="Explorar">
+                    <i class="fa-solid fa-compass"></i>
+                    <span class="nav-text">Explorar</span>
+                </a>
+                <a href="comunidade.html" class="nav-link" title="Comunidades">
+                    <i class="fa-solid fa-users"></i>
+                    <span class="nav-text">Comunidades</span>
+                </a>
+                <a href="notificacoes.html" class="nav-link" title="Notificações">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="nav-text">Notificações</span>
+                </a>
+                <a href="chat.html" class="nav-link" title="Mensagens">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span class="nav-text">Mensagens</span>
+                </a>
+                <a href="game.html" class="nav-link" title="Jogos">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span class="nav-text">Jogos</span>
+                </a>
+                <a href="profile.html" class="nav-link" title="Perfil">
+                    <i class="fa-solid fa-user-astronaut"></i>
+                    <span class="nav-text">Perfil</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content-explore"> <!-- Classe alterada para content-explore para usar estilos de style.css -->
+            <header class="explore-header mb-6">
+                <h1 class="text-3xl font-extrabold mb-4">Explorar</h1>
+                <div class="search-input-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="search" id="explore-search-input" placeholder="Buscar por vídeos, músicas, pessoas...">
+                </div>
+            </header>
+
+            <section class="explore-content-tabs">
+                <div class="tabs-nav">
+                    <button class="tab-link active" data-tab="para-voce">Para Você</button>
+                    <button class="tab-link" data-tab="videos">Vídeos</button>
+                    <button class="tab-link" data-tab="musicas">Músicas</button>
+                    <button class="tab-link" data-tab="pessoas">Pessoas</button>
+                </div>
+                <div class="tabs-content">
+                    <div id="para-voce" class="tab-pane active">
+                        <div class="content-grid">
+                            <!-- Conteúdo recomendado misto -->
+                            <div class="grid-item">
+                                <img src="https://i.pinimg.com/736x/5c/b1/60/5cb160505010248a9c3abadea923805a.jpg" alt="Viagem Espacial">
+                                <div class="grid-item-overlay flex-col justify-end items-start">
+                                    <h3>Viagem Espacial</h3>
+                                    <p>Descubra novos mundos.</p>
+                                </div>
+                            </div>
+                            <div class="grid-item">
+                                <img src="https://i.pinimg.com/736x/f4/c0/27/f4c0271289275fe3cfdef89eb16d9f5e.jpg" alt="Tecnologia Futurista">
+                                <div class="grid-item-overlay flex-col justify-end items-start">
+                                    <h3>Tecnologia Futurista</h3>
+                                    <p>Gadgets que você vai amar.</p>
+                                </div>
+                            </div>
+                            <div class="grid-item">
+                                <img src="https://i.pinimg.com/1200x/92/74/97/9274979699406ca15477a1c299494c13.jpg" alt="Música Eletrônica">
+                                <div class="grid-item-overlay flex-col justify-end items-start">
+                                    <h3>Música Eletrônica</h3>
+                                    <p>Batidas que te movem.</p>
+                                </div>
+                            </div>
+                            <div class="grid-item">
+                                <img src="https://i.pinimg.com/736x/32/65/40/32654064c16f11ceb5482c31b70dcde1.jpg" alt="Arte Digital">
+                                <div class="grid-item-overlay flex-col justify-end items-start">
+                                    <h3>Arte Digital</h3>
+                                    <p>Criações incríveis.</p>
+                                </div>
+                            </div>
+                            <!-- Conteúdo removido: Culinária Exótica -->
+                            <!-- Conteúdo removido: Natureza Urbana -->
+                            <!-- Conteúdo removido: Fitness e Saúde -->
+                        </div>
+                    </div>
+                    <div id="videos" class="tab-pane">
+                        <div class="content-grid">
+                            <div class="media-card">
+                                <img src="https://www.proway.com.br/foto/jpg/curso/full/15295/1/css-modulo-avancado.jpg" alt="Tutorial de Código">
+                                <div class="media-content">
+                                    <h3>Tutorial de Código: CSS Avançado</h3>
+                                    <p>Aprenda truques e dicas para estilização.</p>
+                                </div>
+                            </div>
+                            <div class="media-card">
+                                <img src="https://i.ytimg.com/vi/FQXCpzQyyhg/maxresdefault.jpg" alt="Documentário Espacial">
+                                <div class="media-content">
+                                    <h3>Documentário: A Vida em Marte</h3>
+                                    <p>Uma jornada fascinante pelo planeta vermelho.</p>
+                                </div>
+                            </div>
+                            <div class="media-card">
+                                <img src="https://classic.exame.com/wp-content/uploads/2017/09/iphone-x.jpg?quality=70&strip=info&w=680" alt="Review de Gadgets">
+                                <div class="media-content">
+                                    <h3>Review: O Novo Smartphone X</h3>
+                                    <p>Análise completa do lançamento mais esperado.</p>
+                                </div>
+                            </div>
+                             <div class="media-card">
+                                <img src="https://encdn.ldmnq.com/faq/images/pt/19ff880d-ee50-4bee-ac93-ee909c7255cd.jpg" alt="Gameplay de Jogo">
+                                <div class="media-content">
+                                    <h3>Gameplay: Aventura no Mundo Aberto</h3>
+                                    <p>Explore cenários incríveis e desafios épicos.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="musicas" class="tab-pane">
+                        <div class="content-grid">
+                            <div class="media-card">
+                                <img src="https://i.ytimg.com/vi/urB1Zl_XOFY/maxresdefault.jpg" alt="Álbum Synthwave">
+                                <div class="media-content">
+                                    <h3>Synthwave Dreams</h3>
+                                    <p>Artista: Neon Echo</p>
+                                </div>
+                            </div>
+                            <div class="media-card">
+                                <img src="https://i.ytimg.com/vi/3VO8_1XIpUQ/maxresdefault.jpg" alt="Pop Indie">
+                                <div class="media-content">
+                                    <h3>Summer Vibes</h3>
+                                    <p>Artista: The Lofi Collective</p>
+                                </div>
+                            </div>
+                            <div class="media-card">
+                                <img src="https://flxt.tmsimg.com/assets/p22901735_b_v13_aa.jpg" alt="Rock Alternativo">
+                                <div class="media-content">
+                                    <h3>Urban Legends</h3>
+                                    <p>Artista: City Lights</p>
+                                </div>
+                            </div>
+                             <div class="media-card">
+                                <img src="https://i.ytimg.com/vi/vBl8PytrtHM/maxresdefault.jpg" alt="Eletrônica Chill">
+                                <div class="media-content">
+                                    <h3>Chillout Zone</h3>
+                                    <p>Artista: Ambient Flow</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="pessoas" class="tab-pane">
+                        <div class="user-card-grid"> <!-- Nova classe para o grid de usuários -->
+                            <div class="user-card">
+                                <img src="https://i.pinimg.com/736x/ad/b3/a9/adb3a95eb2128cd200d4f7c2d9c288e4.jpg" alt="Avatar Ana Livia">
+                                <div class="user-info">
+                                    <h3>Ana Livia</h3>
+                                    <p>Desenvolvedora Web | UI/UX Designer</p>
+                                </div>
+                                <button class="follow-btn" data-user-id="ana">Seguir</button>
+                            </div>
+                            <div class="user-card">
+                                <img src="https://i.pinimg.com/736x/0f/1f/6b/0f1f6bcc56cfa1481fa9c07280cc0717.jpg" alt="Avatar Marcos Vale">
+                                <div class="user-info">
+                                    <h3>Marcos Vale</h3>
+                                    <p>Engenheiro de Software | Entusiasta de IA</p>
+                                </div>
+                                <button class="follow-btn following" data-user-id="marcos">Seguindo</button>
+                            </div>
+                            <div class="user-card">
+                                <img src="https://i.pinimg.com/736x/32/b5/17/32b51754e1496531c11a027c9a185d24.jpg" alt="Avatar Carlos Souza">
+                                <div class="user-info">
+                                    <h3>Carlos Souza</h3>
+                                    <p>Criador de Conteúdo | Gamer</p>
+                                </div>
+                                <button class="follow-btn" data-user-id="carlos">Seguir</button>
+                            </div>
+                             <div class="user-card">
+                                <img src="https://i.pinimg.com/736x/24/91/a6/2491a6aad04c52f42af5b2d100f4efc2.jpg" alt="Avatar Juliana Reis">
+                                                                <div class="user-info">
+                                    <h3>Juliana Reis</h3>
+                                    <p>Fotógrafa | Viajante</p>
+                                </div>
+                                <button class="follow-btn" data-user-id="juliana">Seguir</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ===== Draggable Floating Music Player ===== -->
+    <div id="music-player-fab">
+        <div id="music-player-panel" class="hidden">
+            <div class="player-header">
+                <span>Tocando agora</span>
+                <button id="playlist-toggle-btn" title="Ver Playlist"><i class="fa-solid fa-list-ol"></i></button>
+            </div>
+            <div class="track-info">
+                <img id="track-artwork" src="https://placehold.co/80x80/2a2a2e/white?text=Music" alt="Capa do Álbum">
+                <div class="track-details">
+                    <h3 id="track-title">Selecione uma música</h3>
+                    <p id="track-artist">Artista Desconhecido</p>
+                </div>
+            </div>
+            <div class="player-controls">
+                <button id="prev-track-btn"><i class="fa-solid fa-backward-step"></i></button>
+                <button id="play-pause-btn"><i class="fa-solid fa-play"></i></button>
+                <button id="next-track-btn"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <div class="volume-control">
+                <i class="fa-solid fa-volume-low"></i>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+                <i class="fa-solid fa-volume-high"></i>
+            </div>
+            <div id="playlist-view" class="hidden">
+                <h5>Próximas na Fila</h5>
+                <ul>
+                    <!-- Itens da playlist serão inseridos aqui -->
+                </ul>
+            </div>
+        </div>
+        <button id="music-toggle-fab" title="Player de Música">
+            <img src="https://placehold.co/80x80/2a2a2e/white?text=Music" alt="Capa da música no player">
+        </button>
+    </div>
+    <audio id="audio-element"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica de alternância de tema (adaptada do seu main.js para uso direto)
+            const body = document.body;
+            const sidebar = document.querySelector('.sidebar'); // Seleciona a sidebar
+
+            // Verifica a preferência de tema salva
+            const savedTheme = localStorage.getItem('theme') || 'light-theme';
+            body.classList.add(savedTheme);
+            // O estilo da sidebar para o tema escuro é tratado pelo style.css agora,
+            // usando o seletor pai (body.dark-theme .sidebar)
+
+            // Adiciona event listeners para a troca de abas
+            const tabLinks = document.querySelectorAll('.tab-link');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    // Remove 'active' de todos os links e painéis de abas
+                    tabLinks.forEach(l => l.classList.remove('active'));
+                    tabPanes.forEach(p => p.classList.remove('active'));
+
+                    // Adiciona 'active' ao link da aba clicado e ao seu painel correspondente
+                    link.classList.add('active');
+                    document.getElementById(link.dataset.tab).classList.add('active');
+                });
+            });
+
+            // Lógica do botão "Seguir" para a aba "Pessoas"
+            document.querySelectorAll('.follow-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.classList.contains('following')) {
+                        button.classList.remove('following');
+                        button.textContent = 'Seguir';
+                    } else {
+                        button.classList.add('following');
+                        button.textContent = 'Seguindo';
+                    }
+                });
+            });
+
+            // Funcionalidade de busca (filtro simples no lado do cliente)
+            const searchInput = document.getElementById('explore-search-input');
+            searchInput.addEventListener('input', (event) => {
+                const query = event.target.value.toLowerCase();
+                const activeTabId = document.querySelector('.tab-link.active').dataset.tab;
+                const activeGrid = document.querySelector(`#${activeTabId} .content-grid`); // Seleciona a grid de conteúdo
+                const userCardGrid = document.querySelector(`#${activeTabId} .user-card-grid`); // Seleciona a grid de usuários
+
+                // Lida com a aba "Para Você", "Vídeos" e "Músicas"
+                if (activeGrid) {
+                    Array.from(activeGrid.children).forEach(item => {
+                        const titleElement = item.querySelector('h3'); // Título pode estar em overlay ou media-content
+                        const descElement = item.querySelector('p'); // Descrição pode estar em overlay ou media-content
+
+                        const match = (titleElement && titleElement.textContent.toLowerCase().includes(query)) ||
+                                      (descElement && descElement.textContent.toLowerCase().includes(query));
+                        
+                        item.style.display = match ? (item.classList.contains('grid-item') ? 'flex' : 'block') : 'none';
+                    });
+                }
+
+                // Lida com a aba "Pessoas"
+                if (userCardGrid) {
+                    const users = Array.from(userCardGrid.children);
+                    users.forEach(userCard => {
+                        const nameElement = userCard.querySelector('.user-info h3');
+                        const bioElement = userCard.querySelector('.user-info p');
+
+                        const match = (nameElement && nameElement.textContent.toLowerCase().includes(query)) ||
+                                      (bioElement && bioElement.textContent.toLowerCase().includes(query));
+                        
+                        userCard.style.display = match ? 'flex' : 'none';
+                    });
+                }
+            });
+        });
+    </script>
+    <script src="js/main.js"></script>
+</body>
+</html>

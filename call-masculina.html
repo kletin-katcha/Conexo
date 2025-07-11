@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chamada com Marcos - Conectare</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        .call-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--bg-primary-dark);
+            color: white;
+            position: relative;
+        }
+
+        .call-background-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            filter: brightness(0.6);
+        }
+
+        .call-background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+            filter: brightness(0.6);
+            display: none;
+        }
+
+        .call-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-align: center;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+        }
+
+        .call-status-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .caller-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .caller-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--accent-dark);
+            object-fit: cover;
+        }
+
+        .caller-name {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .call-controls {
+            display: flex;
+            gap: 25px;
+            margin-top: 30px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 15px 30px;
+            border-radius: 50px;
+        }
+
+        .control-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .control-button:hover {
+            transform: scale(1.05);
+        }
+
+        .control-button.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .control-button.end-call {
+            background-color: #e0245e;
+        }
+
+        .control-button.end-call:hover {
+            background-color: #c21c4e;
+        }
+
+        .local-video {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 180px;
+            height: 120px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            z-index: 2;
+            object-fit: cover;
+        }
+
+        .call-state-ringing .call-content,
+        .call-state-connecting .call-content {
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.03); opacity: 0.9; }
+        }
+
+        .call-state-in-call .call-content {
+            animation: none;
+        }
+
+        .call-state-ended .call-content {
+            opacity: 0.5;
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <div class="call-container" id="callContainer">
+        <video class="call-background-video" id="remoteVideo" loop muted autoplay playsinline>
+            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            Seu navegador não suporta o elemento de vídeo.
+        </video>
+
+        <div class="call-background-image" id="customBackgroundImage"></div>
+
+        <div class="call-content">
+            <p class="call-status-text" id="callStatusText">Chamando...</p>
+            <div class="caller-info">
+                <!-- Imagem do Carlos Souza atualizada -->
+                <img src="https://i.pinimg.com/736x/32/b5/17/32b51754e1496531c11a027c9a185d24.jpg" alt="Avatar do Chamador" class="caller-avatar" id="callerAvatar">
+                <h2 class="caller-name" id="callerName">Marcos Vale</h2>
+            </div>
+            <div class="call-controls">
+                <button class="control-button" id="toggleMicBtn" title="Ativar/Desativar Microfone">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="control-button" id="toggleCameraBtn" title="Ativar/Desativar Câmera">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button class="control-button" id="changeBackgroundBtn" title="Alterar Fundo">
+                    <i class="fa-solid fa-image"></i>
+                </button>
+                <button class="control-button end-call" id="endCallBtn" title="Encerrar Chamada">
+                    <i class="fas fa-phone-slash"></i>
+                </button>
+            </div>
+        </div>
+
+        <img src="https://placehold.co/180x120/5e5ce5/white?text=Sua+Câmera" alt="Sua Câmera" class="local-video" id="localVideo">
+    </div>
+
+    <input type="file" id="backgroundUploadInput" accept="image/*" style="display: none;">
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const callContainer = document.getElementById('callContainer');
+            const callStatusText = document.getElementById('callStatusText');
+            const callerAvatar = document.getElementById('callerAvatar');
+            const callerName = document.getElementById('callerName');
+            const remoteVideo = document.getElementById('remoteVideo');
+            const customBackgroundImage = document.getElementById('customBackgroundImage');
+            const localVideo = document.getElementById('localVideo');
+            const toggleMicBtn = document.getElementById('toggleMicBtn');
+            const toggleCameraBtn = document.getElementById('toggleCameraBtn');
+            const endCallBtn = document.getElementById('endCallBtn');
+            const changeBackgroundBtn = document.getElementById('changeBackgroundBtn');
+            const backgroundUploadInput = document.getElementById('backgroundUploadInput');
+
+            let callState = 'ringing';
+            let micOn = true;
+            let cameraOn = true;
+            let callTimer;
+            let callDuration = 0;
+
+            const caller = {
+                name: "Marcos Vale",
+                // Avatar do Carlos Souza atualizado no JS
+                avatar: "https://i.pinimg.com/736x/32/b5/17/32b51754e1496531c11a027c9a185d24.jpg",
+                remoteVideoSrc: "https://www.w3schools.com/html/mov_bbb.mp4"
+            };
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const callType = urlParams.get('type');
+
+            function loadCustomBackground() {
+                const savedBackground = localStorage.getItem('marcosCallBackground');
+                if (savedBackground) {
+                    customBackgroundImage.style.backgroundImage = `url('${savedBackground}')`;
+                    customBackgroundImage.style.display = 'block';
+                    remoteVideo.style.display = 'none';
+                    remoteVideo.pause();
+                } else {
+                    customBackgroundImage.style.backgroundImage = 'none';
+                    customBackgroundImage.style.backgroundColor = 'var(--bg-primary-dark)';
+                    customBackgroundImage.style.display = 'block';
+
+                    if (callType === 'video') {
+                        remoteVideo.style.display = 'block';
+                        remoteVideo.play().catch(e => console.error("Erro ao tentar reproduzir vídeo remoto:", e));
+                    } else {
+                        remoteVideo.style.display = 'none';
+                        remoteVideo.pause();
+                    }
+                }
+            }
+
+            function updateCallState(newState) {
+                callState = newState;
+                callContainer.className = `call-container call-state-${newState}`;
+
+                switch (newState) {
+                    case 'ringing':
+                        callStatusText.textContent = "Chamando...";
+                        callerName.textContent = caller.name;
+                        callerAvatar.src = caller.avatar;
+                        remoteVideo.src = caller.remoteVideoSrc;
+                        remoteVideo.load();
+
+                        if (callType === 'video' && !localStorage.getItem('marcosCallBackground')) {
+                            remoteVideo.play().catch(e => console.error("Erro ao tentar reproduzir vídeo remoto:", e));
+                            remoteVideo.style.display = 'block';
+                            callerAvatar.style.display = 'none';
+                        } else if (callType === 'voice' || localStorage.getItem('marcosCallBackground')) {
+                            remoteVideo.pause();
+                            remoteVideo.style.display = 'none';
+                            callerAvatar.style.display = 'block';
+                        }
+                        localVideo.style.display = 'block';
+                        break;
+                    case 'connecting':
+                        callStatusText.textContent = "Conectando...";
+                        break;
+                    case 'in-call':
+                        callStatusText.textContent = "00:00";
+                        if (callType === 'video' && !localStorage.getItem('marcosCallBackground')) {
+                            callerAvatar.style.display = 'none';
+                        } else {
+                            remoteVideo.pause();
+                            remoteVideo.style.display = 'none';
+                            callerAvatar.style.display = 'block';
+                        }
+                        startCallTimer();
+                        break;
+                    case 'ended':
+                        callStatusText.textContent = "Chamada Encerrada";
+                        remoteVideo.pause();
+                        stopCallTimer();
+                        setTimeout(() => {
+                            window.location.href = 'chat.html';
+                        }, 2000);
+                        break;
+                }
+            }
+
+            function startCallTimer() {
+                callDuration = 0;
+                callTimer = setInterval(() => {
+                    callDuration++;
+                    const minutes = String(Math.floor(callDuration / 60)).padStart(2, '0');
+                    const seconds = String(callDuration % 60).padStart(2, '0');
+                    callStatusText.textContent = `${minutes}:${seconds}`;
+                }, 1000);
+            }
+
+            function stopCallTimer() {
+                clearInterval(callTimer);
+            }
+
+            toggleMicBtn.addEventListener('click', () => {
+                micOn = !micOn;
+                toggleMicBtn.classList.toggle('active', !micOn);
+                toggleMicBtn.querySelector('i').className = micOn ? 'fas fa-microphone' : 'fas fa-microphone-slash';
+            });
+
+            toggleCameraBtn.addEventListener('click', () => {
+                cameraOn = !cameraOn;
+                toggleCameraBtn.classList.toggle('active', !cameraOn);
+                toggleCameraBtn.querySelector('i').className = cameraOn ? 'fas fa-video' : 'fas fa-video-slash';
+                localVideo.style.display = cameraOn ? 'block' : 'none';
+                if (callType === 'voice') {
+                    toggleCameraBtn.style.display = 'none';
+                } else {
+                    toggleCameraBtn.style.display = 'flex';
+                }
+            });
+
+            endCallBtn.addEventListener('click', () => {
+                updateCallState('ended');
+            });
+
+            if (changeBackgroundBtn) {
+                changeBackgroundBtn.addEventListener('click', () => {
+                    backgroundUploadInput.click();
+                });
+            }
+
+            if (backgroundUploadInput) {
+                backgroundUploadInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const imageUrl = e.target.result;
+                            customBackgroundImage.style.backgroundImage = `url('${imageUrl}')`;
+                            customBackgroundImage.style.display = 'block';
+                            customBackgroundImage.style.backgroundColor = 'transparent';
+                            remoteVideo.style.display = 'none';
+                            remoteVideo.pause();
+                            localStorage.setItem('marcosCallBackground', imageUrl);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            loadCustomBackground();
+            updateCallState('ringing');
+            setTimeout(() => {
+                updateCallState('connecting');
+            }, 3000);
+            setTimeout(() => {
+                updateCallState('in-call');
+            }, 5000);
+
+            if (callType === 'voice') {
+                toggleCameraBtn.style.display = 'none';
+                remoteVideo.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

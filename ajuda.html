@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Ajuda - Conectare</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Main Stylesheet (for theme variables and core styles) -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Custom styles for Help Page */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary-light);
+            color: var(--text-primary-light);
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        .dark-theme body {
+            background-color: var(--bg-primary-dark);
+            color: var(--text-primary-dark);
+        }
+
+        .help-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            /* A margem esquerda será controlada pelo JS para responsividade da sidebar */
+            padding: 2rem;
+            max-width: 1200px;
+            margin-right: auto;
+            margin-left: 80px; /* Margem inicial para a sidebar recolhida */
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Ajusta o conteúdo quando a sidebar expande */
+        .sidebar:hover ~ .help-container {
+            margin-left: 224px; /* 56 (w-56) * 4px/unit = 224px for expanded sidebar */
+        }
+
+        .help-header {
+            text-align: center;
+            margin-bottom: 2.5rem; /* mb-10 */
+        }
+        .help-header h1 {
+            font-size: 2.5rem; /* text-4xl */
+            font-weight: 800; /* font-extrabold */
+            margin-bottom: 0.75rem; /* mb-3 */
+            color: var(--text-primary-light);
+        }
+        .dark-theme .help-header h1 {
+            color: var(--text-primary-dark);
+        }
+        .help-header p {
+            font-size: 1.125rem; /* text-lg */
+            color: var(--text-secondary-light);
+        }
+        .dark-theme .help-header p {
+            color: var(--text-secondary-dark);
+        }
+
+        .search-faq-container {
+            position: relative;
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+        .search-faq-container input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem; /* pl-12 pr-4 py-3 */
+            border-radius: 9999px; /* rounded-full */
+            border: 1px solid var(--border-light);
+            background-color: var(--bg-secondary-light);
+            box-shadow: 0 1px 2px 0 var(--shadow-light);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            color: var(--text-primary-light);
+        }
+        .dark-theme .search-faq-container input {
+            background-color: var(--bg-secondary-dark);
+            border-color: var(--border-dark);
+            color: var(--text-primary-dark);
+        }
+        .search-faq-container input:focus {
+            border-color: var(--accent-light);
+            box-shadow: 0 0 0 2px rgba(var(--accent-light-rgb), 0.5);
+        }
+        .dark-theme .search-faq-container input:focus {
+            border-color: var(--accent-dark);
+            box-shadow: 0 0 0 2px rgba(var(--accent-dark-rgb), 0.5);
+        }
+        .search-faq-container i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary-light);
+        }
+        .dark-theme .search-faq-container i {
+            color: var(--text-secondary-dark);
+        }
+
+        .faq-section {
+            background-color: var(--bg-secondary-light);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 10px var(--shadow-light);
+        }
+        .dark-theme .faq-section {
+            background-color: var(--bg-secondary-dark);
+            box-shadow: 0 4px 10px var(--shadow-dark);
+        }
+        .faq-section h2 {
+            font-size: 1.75rem; /* text-2xl */
+            font-weight: 700; /* font-bold */
+            margin-bottom: 1.5rem; /* mb-6 */
+            text-align: center;
+            color: var(--text-primary-light);
+        }
+        .dark-theme .faq-section h2 {
+            color: var(--text-primary-dark);
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 0;
+        }
+        .dark-theme .faq-item {
+            border-bottom-color: var(--border-dark);
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background: none;
+            border: none;
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+            color: var(--text-primary-light);
+            cursor: pointer;
+            padding: 0.5rem 0;
+            text-align: left;
+            transition: color 0.2s;
+        }
+        .dark-theme .faq-question {
+            color: var(--text-primary-dark);
+        }
+        .faq-question:hover {
+            color: var(--accent-light);
+        }
+        .dark-theme .faq-question:hover {
+            color: var(--accent-dark);
+        }
+        .faq-question i {
+            margin-left: 1rem;
+            transition: transform 0.3s;
+        }
+        .faq-question.active i {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            color: var(--text-secondary-light);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            padding-left: 1rem; /* Indent answer */
+        }
+        .dark-theme .faq-answer {
+            color: var(--text-secondary-dark);
+        }
+        .faq-answer.active {
+            max-height: 200px; /* Adjust as needed, large enough for content */
+            padding: 1rem 0 0.5rem 1rem;
+        }
+
+        .contact-section {
+            background-color: var(--bg-secondary-light);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 10px var(--shadow-light);
+        }
+        .dark-theme .contact-section {
+            background-color: var(--bg-secondary-dark);
+            box-shadow: 0 4px 10px var(--shadow-dark);
+        }
+        .contact-section h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary-light);
+        }
+        .dark-theme .contact-section h2 {
+            color: var(--text-primary-dark);
+        }
+        .contact-section p {
+            font-size: 1rem;
+            color: var(--text-secondary-light);
+            margin-bottom: 1.5rem;
+        }
+        .dark-theme .contact-section p {
+            color: var(--text-secondary-dark);
+        }
+
+        .contact-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem; /* gap-6 */
+        }
+        .contact-option-card {
+            background-color: var(--bg-primary-light);
+            border-radius: 12px;
+            padding: 1.5rem; /* p-6 */
+            width: 100%;
+            max-width: 250px;
+            box-shadow: 0 2px 5px var(--shadow-light);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .dark-theme .contact-option-card {
+            background-color: var(--bg-primary-dark);
+            box-shadow: 0 2px 5px var(--shadow-dark);
+        }
+        .contact-option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px var(--shadow-dark);
+        }
+        .contact-option-card i {
+            font-size: 2.5rem; /* text-4xl */
+            color: var(--accent-light);
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        .dark-theme .contact-option-card i {
+            color: var(--accent-dark);
+        }
+        .contact-option-card h3 {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 0.5rem; /* mb-2 */
+            color: var(--text-primary-light);
+        }
+        .dark-theme .contact-option-card h3 {
+            color: var(--text-primary-dark);
+        }
+        .contact-option-card p {
+            font-size: 0.9rem; /* text-sm */
+            color: var(--text-secondary-light);
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        .dark-theme .contact-option-card p {
+            color: var(--text-secondary-dark);
+        }
+        .contact-option-card .btn-primary {
+            width: auto;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments for mobile (Instagram-like bottom nav) */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 60px; /* Add padding for the fixed bottom sidebar */
+            }
+
+            .main-wrapper {
+                flex-direction: column; /* Stack content vertically */
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 60px; /* Fixed height for bottom nav */
+                position: fixed; /* Fixed at the bottom */
+                bottom: 0;
+                left: 0;
+                right: 0;
+                padding: 0; /* Remove vertical padding */
+                border-right: none;
+                border-top: 1px solid var(--border-light); /* Top border instead of right */
+                flex-direction: row; /* Layout items horizontally */
+                justify-content: space-around; /* Distribute items evenly */
+                z-index: 1000; /* Ensure it's above other content */
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1); /* Shadow for separation */
+            }
+            .dark-theme .sidebar {
+                border-top-color: var(--border-dark);
+            }
+            .sidebar:hover {
+                width: 100%; /* No expansion on hover for mobile */
+            }
+            .sidebar-header {
+                display: none; /* Hide logo on mobile */
+            }
+            .sidebar-nav {
+                flex-direction: row; /* Ensure links are horizontal */
+                width: 100%;
+                justify-content: space-around;
+                gap: 0; /* Remove gap for even spacing */
+            }
+            .nav-link {
+                padding: 10px 5px; /* Adjust padding for touch targets */
+                margin: 0; /* Remove margins */
+                flex: 1; /* Allow links to take equal space */
+                text-align: center;
+                display: flex;
+                flex-direction: column; /* Stack icon and text (if visible) */
+                align-items: center;
+                justify-content: center;
+                border-radius: 0; /* No rounded corners for full width */
+            }
+            .nav-link .nav-text {
+                display: none; /* Hide text on mobile nav */
+            }
+            .nav-link i {
+                min-width: unset; /* Remove min-width */
+                font-size: 1.4rem; /* Slightly larger icons */
+                margin-bottom: 4px; /* Space between icon and text if text was visible */
+            }
+            .nav-link:hover, .nav-link.active {
+                background-color: transparent; /* No background change on hover/active for bottom nav */
+                color: var(--accent-light); /* Only change icon color */
+            }
+            .dark-theme .nav-link:hover, .dark-theme .nav-link.active {
+                color: var(--accent-dark);
+            }
+            .nav-link.active i {
+                transform: scale(1.1); /* Slight bounce effect on active icon */
+            }
+            .sidebar-footer {
+                display: none; /* Hide footer on mobile sidebar */
+            }
+
+            .help-container {
+                margin-left: 0; /* Remove fixed margin for sidebar */
+                padding: 1rem;
+                max-width: 100%; /* Allow content to take full width */
+                padding-bottom: 80px; /* Add padding to avoid content being hidden by bottom nav */
+            }
+            /* Adjust music player FAB position to be above the bottom nav */
+            #music-player-fab {
+                bottom: 80px; /* 60px (nav height) + 20px (margin) */
+                right: 20px;
+            }
+            #music-player-panel {
+                bottom: 150px; /* Adjust panel position relative to new FAB position */
+            }
+
+            .help-header h1 {
+                font-size: 2rem;
+            }
+            .help-header p {
+                font-size: 1rem;
+            }
+            .faq-section, .contact-section {
+                padding: 1.5rem;
+            }
+            .faq-section h2, .contact-section h2 {
+                font-size: 1.5rem;
+            }
+            .faq-question {
+                font-size: 1rem;
+            }
+            .contact-options {
+                flex-direction: column; /* Stack contact cards vertically */
+                align-items: center; /* Center stacked cards */
+            }
+            .contact-option-card {
+                max-width: 90%; /* Limit card width on mobile */
+            }
+        }
+
+        /* Adjustments for very small screens (e.g., 320px width) */
+        @media (max-width: 480px) {
+            .help-container {
+                padding: 0.5rem;
+                padding-bottom: 70px; /* Adjust padding for smaller bottom nav */
+            }
+            .sidebar {
+                height: 50px; /* Slightly smaller bottom nav for very small screens */
+            }
+            .nav-link i {
+                font-size: 1.2rem;
+            }
+            #music-player-fab {
+                bottom: 70px; /* Adjust FAB position */
+            }
+            #music-player-panel {
+                width: 280px; /* Smaller panel for very small screens */
+            }
+
+            .help-header h1 {
+                font-size: 1.8rem;
+            }
+            .help-header p {
+                font-size: 0.9rem;
+            }
+            .search-faq-container input {
+                padding: 0.6rem 0.8rem 0.6rem 2.5rem;
+                font-size: 0.9rem;
+            }
+            .search-faq-container i {
+                left: 0.8rem;
+                font-size: 0.9rem;
+            }
+            .faq-section, .contact-section {
+                padding: 1rem;
+            }
+            .faq-section h2, .contact-section h2 {
+                font-size: 1.3rem;
+            }
+            .faq-question {
+                font-size: 0.95rem;
+            }
+            .faq-answer {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body class="light-theme">
+
+    <div class="main-wrapper">
+        <!-- Sidebar Principal (Mantido do seu projeto) -->
+        <aside class="sidebar">
+            <div class="sidebar-header"><a href="feed.html" class="logo"><i class="fa-solid fa-meteor"></i></a></div>
+            <nav class="sidebar-nav">
+                <a href="feed.html" class="nav-link" title="Início"><i class="fa-solid fa-house-chimney"></i><span class="nav-text">Início</span></a>
+                <a href="search.html" class="nav-link" title="Explorar"><i class="fa-solid fa-compass"></i><span class="nav-text">Explorar</span></a>
+                <a href="comunidade.html" class="nav-link" title="Comunidades"><i class="fa-solid fa-users"></i><span class="nav-text">Comunidades</span></a>
+                <a href="notificacoes.html" class="nav-link" title="Notificações"><i class="fa-solid fa-bell"></i><span class="nav-text">Notificações</span></a>
+                <a href="chat.html" class="nav-link" title="Mensagens"><i class="fa-solid fa-paper-plane"></i><span class="nav-text">Mensagens</span></a>
+                <a href="game.html" class="nav-link" title="Jogos"><i class="fa-solid fa-gamepad"></i><span class="nav-text">Jogos</span></a>
+                <a href="profile.html" class="nav-link" title="Perfil"><i class="fa-solid fa-user-astronaut"></i><span class="nav-text">Perfil</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <!-- O botão de configurações foi removido daqui -->
+            </div>
+        </aside>
+
+        <!-- Main Content for Help Page -->
+        <main class="help-container">
+            <header class="help-header">
+                <h1>Central de Ajuda Conectare</h1>
+                <p>Encontre respostas para suas dúvidas ou entre em contato com nosso suporte.</p>
+                <div class="search-faq-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="search" id="faq-search-input" placeholder="Buscar por perguntas frequentes...">
+                </div>
+            </header>
+
+            <!-- FAQ Section -->
+            <section class="faq-section">
+                <h2>Perguntas Frequentes (FAQ)</h2>
+                <div class="faq-list" id="faq-list">
+                    <!-- FAQ Item 1 -->
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como faço para criar uma conta?
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            Para criar uma conta, clique em "Crie uma agora" na página inicial. Preencha seus dados, como e-mail, nome de usuário e senha. Após o registro, você receberá um e-mail de confirmação. Clique no link para ativar sua conta e começar a usar o Conectare!
+                        </div>
+                    </div>
+                    <!-- FAQ Item 2 -->
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como posso alterar minha foto de perfil?
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            Vá para a página do seu Perfil, clicando no ícone de "Perfil" na barra lateral. Passe o mouse sobre sua foto de perfil e um ícone de câmera aparecerá. Clique nele para fazer upload de uma nova imagem.
+                        </div>
+                    </div>
+                    <!-- FAQ Item 3 -->
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Posso mudar meu nome de usuário?
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            Atualmente, a alteração de nome de usuário não está disponível diretamente pelo perfil. Se você precisar de uma alteração, por favor, entre em contato com o suporte através da opção "Chat ao Vivo".
+                        </div>
+                    </div>
+                    <!-- FAQ Item 4 -->
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como denuncio um conteúdo inadequado?
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            Para denunciar um conteúdo, clique no ícone de três pontos (...) ao lado da publicação ou perfil e selecione "Denunciar". Nossa equipe de moderação irá analisar a denúncia.
+                        </div>
+                    </div>
+                    <!-- FAQ Item 5 -->
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Onde encontro as comunidades?
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            As comunidades estão acessíveis através do ícone "Comunidades" na barra lateral. Lá você pode explorar comunidades existentes ou criar a sua própria.
+                        </div>
+                    </div>
+                    <!-- FAQ Item 6 -->
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como funcionam as chamadas de vídeo/voz?
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            As chamadas de vídeo e voz podem ser iniciadas diretamente de uma conversa no chat. Basta abrir o chat com um amigo e clicar nos ícones de vídeo ou telefone no cabeçalho da conversa.
+                        </div>
+                    </div>
+                    <!-- FAQ Item 7 -->
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Como posso adicionar músicas ao player flutuante?
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            O player flutuante tem uma playlist pré-definida. Atualmente, a funcionalidade de adicionar músicas personalizadas não está disponível, mas você pode interagir com as músicas que aparecem nos posts do seu feed.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contact Section -->
+            <section class="contact-section">
+                <h2>Precisa de mais ajuda?</h2>
+                <p>Nossa equipe de suporte está pronta para te ajudar.</p>
+                <div class="contact-options">
+                    <div class="contact-option-card">
+                        <i class="fa-solid fa-life-ring"></i>
+                        <h3>Chat ao Vivo</h3>
+                        <p>Converse com um de nossos agentes de suporte em tempo real.</p>
+                        <button class="btn-primary" id="start-live-chat-btn">Iniciar Chat</button>
+                    </div>
+                    <div class="contact-option-card">
+                        <i class="fa-solid fa-envelope"></i>
+                        <h3>Enviar E-mail</h3>
+                        <p>Descreva seu problema e responderemos em até 24 horas.</p>
+                        <button class="btn-primary" id="send-email-btn">Enviar E-mail</button>
+                    </div>
+                    <div class="contact-option-card">
+                        <i class="fa-solid fa-phone"></i>
+                        <h3>Ligar para Suporte</h3>
+                        <p>Fale diretamente com nossa equipe de suporte por telefone.</p>
+                        <button class="btn-primary" id="call-support-btn">Ligar Agora</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ===== Draggable Floating Music Player (Mantido do seu projeto) ===== -->
+    <div id="music-player-fab">
+        <div id="music-player-panel" class="hidden">
+            <div class="player-header">
+                <span>Tocando agora</span>
+                <button id="playlist-toggle-btn" title="Ver Playlist"><i class="fa-solid fa-list-ol"></i></button>
+            </div>
+            <div class="track-info">
+                <img id="track-artwork" src="https://placehold.co/80x80/2a2a2e/white?text=Music" alt="Capa do Álbum">
+                <div class="track-details">
+                    <h3 id="track-title">Selecione uma música</h3>
+                    <p id="track-artist">Artista Desconhecido</p>
+                </div>
+            </div>
+            <div class="player-controls">
+                <button id="prev-track-btn"><i class="fa-solid fa-backward-step"></i></button>
+                <button id="play-pause-btn"><i class="fa-solid fa-play"></i></button>
+                <button id="next-track-btn"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <div class="volume-control">
+                <i class="fa-solid fa-volume-low"></i>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+                <i class="fa-solid fa-volume-high"></i>
+            </div>
+            <div id="playlist-view" class="hidden">
+                <h5>Próximas na Fila</h5>
+                <ul>
+                    <!-- Itens da playlist serão inseridos aqui -->
+                </ul>
+            </div>
+        </div>
+        <button id="music-toggle-fab" title="Player de Música">
+            <img src="https://placehold.co/80x80/2a2a2e/white?text=Music" alt="Capa da música no player">
+        </button>
+    </div>
+    <audio id="audio-element"></audio>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // FAQ Accordion functionality
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', () => {
+                    const answer = question.nextElementSibling; // The .faq-answer div
+                    const icon = question.querySelector('i');
+
+                    // Toggle active class on question and answer
+                    question.classList.toggle('active');
+                    answer.classList.toggle('active');
+
+                    // Toggle chevron icon rotation
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+
+                    // Close other open FAQ items in the same section
+                    faqQuestions.forEach(otherQuestion => {
+                        if (otherQuestion !== question && otherQuestion.classList.contains('active')) {
+                            otherQuestion.classList.remove('active');
+                            otherQuestion.nextElementSibling.classList.remove('active');
+                            otherQuestion.querySelector('i').classList.remove('fa-chevron-up');
+                            otherQuestion.querySelector('i').classList.add('fa-chevron-down');
+                        }
+                    });
+                });
+            });
+            const faqSearchInput = document.getElementById('faq-search-input');
+            faqSearchInput.addEventListener('input', (event) => {
+                const searchTerm = event.target.value.toLowerCase();
+                const faqItems = document.querySelectorAll('.faq-item');
+
+                faqItems.forEach(item => {
+                    const questionText = item.querySelector('.faq-question').textContent.toLowerCase();
+                    const answerText = item.querySelector('.faq-answer').textContent.toLowerCase();
+
+                    if (questionText.includes(searchTerm) || answerText.includes(searchTerm)) {
+                        item.style.display = 'block'; // Show the item
+                        // Optionally, expand the answer if it matches the search term
+                        if (!item.querySelector('.faq-question').classList.contains('active') && answerText.includes(searchTerm)) {
+                             item.querySelector('.faq-question').click(); // Simulate click to expand
+                        }
+                    } else {
+                        item.style.display = 'none'; // Hide the item
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

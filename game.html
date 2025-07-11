@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conectare Play - Central de Jogos</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Estilos específicos para a Central de Jogos */
+        .content-game {
+            flex-grow: 1;
+            margin-left: 80px; /* Espaço para a sidebar */
+            padding: 20px 30px;
+            max-width: 1000px; /* Largura máxima para o conteúdo */
+            margin-right: auto;
+            margin-left: calc(80px + (100% - 80px - 1000px) / 2); /* Centraliza após a sidebar */
+            transition: margin-left 0.3s ease;
+        }
+
+        .game-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            /* Removido: color: var(--text-primary-light); para herdar do body */
+        }
+
+        .dark-theme .game-header h1 {
+            color: var(--text-primary-dark);
+        }
+
+        .game-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            /* Removido: color: var(--text-primary-light); para herdar do body */
+        }
+
+        .dark-theme .section-title {
+            color: var(--text-primary-dark);
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background-color: var(--bg-secondary-light);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px var(--shadow-light);
+            transition: transform 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dark-theme .game-card {
+            background-color: var(--bg-secondary-dark);
+            box-shadow: 0 4px 10px var(--shadow-dark);
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .game-card-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .dark-theme .game-card-image {
+            border-color: var(--border-dark);
+        }
+
+        .game-card-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .game-card-content h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary-light);
+        }
+
+        .dark-theme .game-card-content h3 {
+            color: var(--text-primary-dark);
+        }
+
+        .game-card-content p {
+            font-size: 0.9rem;
+            color: var(--text-secondary-light);
+            margin-bottom: 15px;
+        }
+
+        .dark-theme .game-card-content p {
+            color: var(--text-secondary-dark);
+        }
+
+        .game-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto; /* Empurra para baixo */
+        }
+
+        .game-card-actions .btn-primary,
+        .game-card-actions .btn-secondary {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .game-card-actions .btn-secondary.claimed {
+            background-color: var(--accent-light);
+            color: white;
+            opacity: 0.7;
+        }
+
+        .dark-theme .game-card-actions .btn-secondary.claimed {
+            background-color: var(--accent-dark);
+        }
+
+        /* Estilos para Streams */
+        .stream-card {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-secondary-light);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px var(--shadow-light);
+            transition: transform 0.2s ease;
+        }
+
+        .dark-theme .stream-card {
+            background-color: var(--bg-secondary-dark);
+            box-shadow: 0 4px 10px var(--shadow-dark);
+        }
+
+        .stream-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stream-thumbnail {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            position: relative;
+        }
+
+        .stream-live-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #e0245e;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stream-info {
+            padding: 15px;
+        }
+
+        .stream-info h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-primary-light);
+        }
+
+        .dark-theme .stream-info h3 {
+            color: var(--text-primary-dark);
+        }
+
+        .stream-info p {
+            font-size: 0.9rem;
+            color: var(--text-secondary-light);
+            margin-bottom: 10px;
+        }
+
+        .dark-theme .stream-info p {
+            color: var(--text-secondary-dark);
+        }
+
+        .stream-viewer-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            color: var(--text-secondary-light);
+        }
+
+        .dark-theme .stream-viewer-count {
+            color: var(--text-secondary-dark);
+        }
+
+        .stream-viewer-count i {
+            color: #e0245e; /* Cor para o ícone de olho */
+        }
+
+        /* Estilos para o Modal de Jogo Online */
+        .game-play-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1200;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .game-play-modal-overlay:not(.hidden) {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .game-modal-content {
+            background: var(--bg-secondary-dark); /* Fundo escuro para o modal */
+            border-radius: 12px;
+            width: 95%;
+            max-width: 900px;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.3s;
+        }
+
+        .game-play-modal-overlay:not(.hidden) .game-modal-content {
+            transform: scale(1);
+        }
+
+        .game-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-dark);
+            color: var(--text-primary-dark);
+        }
+
+        .game-modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .game-modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: var(--text-secondary-dark);
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .game-modal-body {
+            flex-grow: 1;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black; /* Fundo preto para o jogo */
+        }
+
+        .game-modal-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Estilos para as abas da Central de Jogos */
+        .game-content-tabs .tabs-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border-light); /* Borda sutil na parte inferior */
+            margin-bottom: 1.5rem; /* mb-6 */
+            overflow-x: auto; /* Permite rolagem horizontal em telas pequenas */
+            -webkit-overflow-scrolling: touch; /* Rolagem suave em iOS */
+        }
+        .dark-theme .game-content-tabs .tabs-nav {
+            border-bottom-color: var(--border-dark);
+        }
+        .game-content-tabs .tab-link {
+            padding: 0.5rem 1rem; /* Reduz o padding para um visual mais compacto */
+            font-size: 1.1rem; /* Ajusta o tamanho da fonte */
+            font-weight: 500; /* Menos negrito para o estado padrão */
+            color: var(--text-secondary-light); /* Cor de texto secundária para inativo */
+            position: relative;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.2s;
+            flex-shrink: 0; /* Impede que as abas encolham */
+        }
+        .dark-theme .game-content-tabs .tab-link {
+            color: var(--text-secondary-dark);
+        }
+        .game-content-tabs .tab-link:hover {
+            color: var(--accent-hover-light); /* Cor de destaque no hover */
+        }
+        .dark-theme .game-content-tabs .tab-link:hover {
+            color: var(--accent-hover-dark);
+        }
+        .game-content-tabs .tab-link.active {
+            color: var(--accent-light); /* Cor de destaque para o estado ativo */
+            font-weight: 700; /* Mais negrito para o estado ativo */
+        }
+        .dark-theme .game-content-tabs .tab-link.active {
+            color: var(--accent-dark);
+        }
+        .game-content-tabs .tab-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0.15rem; /* Linha mais fina para o indicador */
+            background-color: var(--accent-light); /* Cor de destaque para a linha */
+            border-radius: 0.25rem; /* Mantém as bordas arredondadas */
+        }
+        .dark-theme .game-content-tabs .tab-link.active::after {
+            background-color: var(--accent-dark);
+        }
+    </style>
+</head>
+<body> <!-- Removida a classe light-theme aqui -->
+
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header"><a href="feed.html" class="logo"><i class="fa-solid fa-meteor"></i></a></div>
+            <nav class="sidebar-nav">
+                <a href="feed.html" class="nav-link" title="Início"><i class="fa-solid fa-house-chimney"></i><span class="nav-text">Início</span></a>
+                <a href="search.html" class="nav-link" title="Explorar"><i class="fa-solid fa-compass"></i><span class="nav-text">Explorar</span></a>
+                <a href="comunidade.html" class="nav-link" title="Comunidades"><i class="fa-solid fa-users"></i><span class="nav-text">Comunidades</span></a>
+                <a href="notificacoes.html" class="nav-link" title="Notificações"><i class="fa-solid fa-bell"></i><span class="nav-text">Notificações</span></a>
+                <a href="chat.html" class="nav-link" title="Mensagens"><i class="fa-solid fa-paper-plane"></i><span class="nav-text">Mensagens</span></a>
+                <!-- Novo link para a Central de Jogos (movido para baixo de Mensagens) -->
+                <a href="game.html" class="nav-link active" title="Jogos"><i class="fa-solid fa-gamepad"></i><span class="nav-text">Jogos</span></a>
+                <a href="profile.html" class="nav-link" title="Perfil"><i class="fa-solid fa-user-astronaut"></i><span class="nav-text">Perfil</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <!-- O botão de configurações foi removido daqui -->
+            </div>
+        </aside>
+
+        <!-- Main Content for Game Hub -->
+        <main class="content-game">
+            <header class="game-header">
+                <h1>Conectare Play</h1>
+                <!-- Botão de busca específico para jogos, se desejar -->
+                <div class="search-bar" style="width: 300px;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="search" id="game-search-input" placeholder="Buscar jogos, notícias...">
+                </div>
+            </header>
+
+            <section class="game-content-tabs">
+                <div class="tabs-nav">
+                    <button class="tab-link active" data-tab="noticias">Notícias</button>
+                    <button class="tab-link" data-tab="gratis">Jogos Grátis</button>
+                    <button class="tab-link" data-tab="lancamentos">Lançamentos</button>
+                    <button class="tab-link" data-tab="streams">Streams Populares</button>
+                    <button class="tab-link" data-tab="jogos-online">Jogos Online</button> <!-- Nova aba para jogos online -->
+                </div>
+                <div class="tabs-content">
+                    <div id="noticias" class="tab-pane active">
+                        <div class="game-grid" id="news-grid">
+                            <!-- Notícias serão carregadas aqui pelo JS -->
+                            <!-- Exemplo de Notícia com botão "Ler Mais" -->
+                            <div class="game-card">
+                                <img src="https://geeknfeminist.com.br/wp-content/uploads/2023/07/imagem_2023-07-11_170928566.png" alt="Novo RPG Cyberpunk Lançado!" class="game-card-image">
+                                <div class="game-card-content">
+                                    <h3>Novo RPG Cyberpunk Lançado!</h3>
+                                    <p>Um mundo distópico e cheio de neon te espera neste novo RPG de mundo aberto. Prepare-se para horas de exploração e combates intensos.</p>
+                                    <div class="game-card-actions">
+                                        <button class="btn-primary no-action-btn" style="width: 100%;">Ler Mais <i class="fa-solid fa-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Outras notícias serão adicionadas dinamicamente pelo JS -->
+                        </div>
+                    </div>
+                    <div id="gratis" class="tab-pane">
+                        <div class="game-grid" id="free-games-grid">
+                            <!-- Jogos Grátis serão carregados aqui pelo JS -->
+                        </div>
+                    </div>
+                    <div id="lancamentos" class="tab-pane">
+                        <div class="game-grid" id="upcoming-games-grid">
+                            <!-- Lançamentos serão carregados aqui pelo JS -->
+                        </div>
+                    </div>
+                    <div id="streams" class="tab-pane">
+                        <div class="game-grid" id="streams-grid">
+                            <!-- Streams serão carregadas aqui pelo JS -->
+                            <!-- Exemplo de Stream com botão "Assistir Agora" -->
+                            <div class="stream-card">
+                                <div style="position: relative;">
+                                    <img src="https://p4.wallpaperbetter.com/wallpaper/194/321/93/lost-planet-video-games-concept-art-snow-winter-weapon-wallpaper-preview.jpg" alt="Stream de GamerGaláxia" class="stream-thumbnail">
+                                    <span class="stream-live-badge">AO VIVO</span>
+                                </div>
+                                <div class="stream-info">
+                                    <h3>GamerGaláxia</h3>
+                                    <p>Jogando: Planetas Perdidos</p>
+                                    <div class="stream-viewer-count"><i class="fa-solid fa-eye"></i> 1.2K</div>
+                                    <div class="game-card-actions" style="margin-top: 15px;">
+                                        <button class="btn-primary no-action-btn" style="width: 100%;">Assistir Agora <i class="fa-solid fa-play"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Outras streams serão adicionadas dinamicamente pelo JS -->
+                        </div>
+                    </div>
+                     <div id="jogos-online" class="tab-pane"> <!-- Novo painel para jogos online -->
+                        <div class="game-grid" id="online-games-grid">
+                            <!-- Jogos online serão carregados aqui pelo JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para Jogar Online -->
+    <div id="game-play-modal" class="game-play-modal-overlay hidden">
+        <div class="game-modal-content">
+            <header class="game-modal-header">
+                <h2 id="game-modal-title"></h2>
+                <button id="game-modal-close-btn" class="game-modal-close-btn">&times;</button>
+            </header>
+            <div class="game-modal-body">
+                <iframe id="game-iframe" src="" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Draggable Floating Music Player ===== -->
+    <div id="music-player-fab">
+        <div id="music-player-panel" class="hidden">
+            <div class="player-header">
+                <span>Tocando agora</span>
+                <button id="playlist-toggle-btn" title="Ver Playlist"><i class="fa-solid fa-list-ol"></i></button>
+            </div>
+            <div class="track-info">
+                <img id="track-artwork" src="https://placehold.co/80x80/2a2a2e/white?text=Music" alt="Capa do Álbum">
+                <div class="track-details">
+                    <h3 id="track-title">Selecione uma música</h3>
+                    <p id="track-artist">Artista Desconhecido</p>
+                </div>
+            </div>
+            <div class="player-controls">
+                <button id="prev-track-btn"><i class="fa-solid fa-backward-step"></i></button>
+                <button id="play-pause-btn"><i class="fa-solid fa-play"></i></button>
+                <button id="next-track-btn"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <div class="volume-control">
+                <i class="fa-solid fa-volume-low"></i>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+                <i class="fa-solid fa-volume-high"></i>
+            </div>
+            <div id="playlist-view" class="hidden">
+                <h5>Próximas na Fila</h5>
+                <ul>
+                    <!-- Itens da playlist serão inseridos aqui -->
+                </ul>
+            </div>
+        </div>
+        <button id="music-toggle-fab" title="Player de Música">
+            <img src="https://placehold.co/80x80/2a2a2e/white?text=Music" alt="Capa da música no player">
+        </button>
+    </div>
+    <audio id="audio-element"></audio>
+
+    <!-- Main JavaScript File -->
+    <script src="js/main.js"></script>
+    <!-- New Game Hub JavaScript File -->
+    <script src="js/game.js"></script>
+</body>
+</html>

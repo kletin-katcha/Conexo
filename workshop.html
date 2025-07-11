@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Workshop - Conectare</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font for Code Area (Fira Code or similar monospace) -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            overflow: hidden; /* Prevent scrolling on the main body when workshop is active */
+            background-color: var(--bg-primary-dark); /* Ensure dark theme for workshop */
+            color: var(--text-primary-dark);
+        }
+
+        .workshop-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background-color: var(--bg-primary-dark);
+        }
+
+        .workshop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--bg-secondary-dark);
+            border-bottom: 1px solid var(--border-dark);
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+
+        .workshop-header h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary-dark);
+        }
+
+        .workshop-close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: var(--text-secondary-dark);
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .workshop-close-btn:hover {
+            color: var(--accent-dark);
+        }
+
+        .workshop-body {
+            display: flex;
+            flex-grow: 1; /* Takes remaining height */
+            padding: 20px;
+            gap: 20px;
+            overflow: hidden; /* Hide overflow if content is too big */
+        }
+
+        .workshop-video-area {
+            flex: 3; /* Occupies more space */
+            background-color: black;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .workshop-video-area video,
+        .workshop-video-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 1s ease-in-out; /* Smooth transition for image changes */
+        }
+
+        .workshop-video-area .live-indicator {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: #e0245e; /* Live red */
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            animation: pulse-live 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-live {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        /* NOVO: Estilos para o cursor simulado */
+        .simulated-cursor {
+            position: absolute;
+            width: 20px; /* Tamanho do cursor */
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* Cor branca translúcida */
+            border-radius: 50%; /* Formato de círculo */
+            border: 2px solid var(--accent-light); /* Borda para destaque */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Brilho */
+            pointer-events: none; /* Garante que não interfira com cliques */
+            opacity: 0; /* Inicia invisível */
+            transition: opacity 0.3s ease-in-out; /* Transição suave para aparecer/desaparecer */
+            z-index: 10; /* Acima da imagem/vídeo */
+            transform: translate(-50%, -50%); /* Centraliza o cursor no ponto */
+        }
+        .simulated-cursor.active {
+            opacity: 1;
+        }
+
+
+        .workshop-interaction-area {
+            flex: 1; /* Occupies less space, for chat and code */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .workshop-chat-container {
+            background-color: var(--bg-secondary-dark);
+            border-radius: 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .workshop-chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: var(--text-primary-dark);
+        }
+        /* Style for scrollbar in chat messages */
+        .workshop-chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        .workshop-chat-messages::-webkit-scrollbar-track {
+            background: var(--bg-primary-dark);
+            border-radius: 10px;
+        }
+        .workshop-chat-messages::-webkit-scrollbar-thumb {
+            background: var(--border-dark);
+            border-radius: 10px;
+        }
+        .workshop-chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary-dark);
+        }
+
+
+        .workshop-chat-message {
+            background-color: var(--bg-primary-dark);
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 90%;
+            align-self: flex-start;
+            word-wrap: break-word; /* Ensures long words break */
+        }
+        .workshop-chat-message strong {
+            color: var(--accent-dark);
+            margin-right: 5px;
+        }
+
+        .workshop-chat-input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid var(--border-dark);
+            gap: 10px;
+            flex-shrink: 0; /* Prevent input area from shrinking */
+        }
+        .workshop-chat-input-area input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 1px solid var(--border-dark);
+            background-color: var(--bg-primary-dark);
+            color: var(--text-primary-dark);
+            font-size: 1rem;
+            outline: none;
+        }
+        .workshop-chat-input-area input:focus {
+            border-color: var(--accent-dark);
+            box-shadow: 0 0 0 2px rgba(126, 126, 227, 0.3);
+        }
+        .workshop-chat-input-area button {
+            background-color: var(--accent-dark);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .workshop-chat-input-area button:hover {
+            background-color: var(--accent-hover-dark);
+            transform: scale(1.05);
+        }
+
+        .workshop-code-area {
+            background-color: #1a1a1a; /* Darker background for code editor */
+            border-radius: 12px;
+            padding: 15px;
+            font-family: 'Fira Code', monospace; /* Use Fira Code for a dev feel */
+            font-size: 0.9rem;
+            color: #00ff00; /* Green text for code */
+            white-space: pre-wrap; /* Preserves whitespace and wraps text */
+            overflow-y: auto;
+            border: 1px solid #333;
+            flex-grow: 0; /* Don't grow, fixed height or content-based */
+            height: 200px; /* Fixed height for code area */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        /* Style for scrollbar in code area */
+        .workshop-code-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        .workshop-code-area::-webkit-scrollbar-track {
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+        .workshop-code-area::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 10px;
+        }
+        .workshop-code-area::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        .workshop-footer {
+            padding: 15px 20px;
+            background-color: var(--bg-secondary-dark);
+            border-top: 1px solid var(--border-dark);
+            display: flex;
+            justify-content: flex-end;
+            flex-shrink: 0; /* Prevent footer from shrinking */
+        }
+        .workshop-footer .btn-danger {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .workshop-body {
+                flex-direction: column;
+                padding: 10px;
+                gap: 10px;
+            }
+            .workshop-video-area {
+                flex: none; /* Remove flex grow */
+                height: 250px; /* Fixed height for mobile video */
+            }
+            .workshop-interaction-area {
+                flex: none;
+                height: auto;
+            }
+            .workshop-code-area {
+                height: 150px; /* Smaller code area on mobile */
+            }
+            .workshop-header h1 {
+                font-size: 1.2rem;
+            }
+            .workshop-close-btn {
+                font-size: 1.5rem;
+            }
+            .workshop-footer {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <div class="workshop-container">
+        <header class="workshop-header">
+            <h1 id="workshop-page-title">Workshop de CSS Avançado</h1>
+            <button class="workshop-close-btn" id="workshop-page-close-btn" title="Sair do Workshop">&times;</button>
+        </header>
+        <div class="workshop-body">
+            <div class="workshop-video-area">
+                <!-- Image to simulate video, will change via JS -->
+                <img id="workshop-main-image" src="./imagens/workshop.jpg" alt="Apresentador do Workshop">
+                <span class="live-indicator">AO VIVO</span>
+                <!-- NOVO: Elemento para o cursor simulado -->
+                <div class="simulated-cursor" id="simulated-cursor"></div>
+            </div>
+            <div class="workshop-interaction-area">
+                <div class="workshop-chat-container">
+                    <div class="workshop-chat-messages" id="workshop-chat-messages">
+                        <!-- Simulated chat messages will be appended here by JS -->
+                        <div class="workshop-chat-message"><strong>Apresentador:</strong> Olá a todos! Sejam bem-vindos ao workshop de Programação do Zero ao Avançado!</div>
+                        <div class="workshop-chat-message"><strong>Você:</strong> Cheguei um pouco atrasado, mas estou animado para aprender!</div>
+                        <div class="workshop-chat-message"><strong>Ana Livia:</strong> O áudio está ótimo!</div>
+                        <div class="workshop-chat-message"><strong>Carlos Souza:</strong> Ansioso para a parte de lógica!</div>
+                        <div class="workshop-chat-message"><strong>Apresentador:</strong> Hoje vamos cobrir desde os fundamentos até conceitos mais avançados de forma prática.</div>
+                    </div>
+                    <div class="workshop-chat-input-area">
+                        <input type="text" placeholder="Diga algo..." id="workshop-chat-input">
+                        <button id="workshop-send-chat-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+                <div class="workshop-code-area" id="workshop-code-area">
+                    <pre><code>// Exemplo de estrutura HTML básica
+&lt;!DOCTYPE html&gt;
+&lt;html lang="pt-BR"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Meu Primeiro Código&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Olá, Mundo da Programação!&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+        <footer class="workshop-footer">
+            <button type="button" class="btn-danger" id="leave-workshop-btn">Sair do Workshop</button>
+        </footer>
+    </div>
+
+    <!-- Script para a lógica da página do workshop -->
+    <script src="js/workshop.js"></script>
+</body>
+</html>

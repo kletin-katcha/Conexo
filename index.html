@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao Conectare</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="light-theme">
+
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <i class="fa-solid fa-meteor logo-icon"></i>
+                <h1>Bem-vindo de volta!</h1>
+                <p>Entre para se conectar ao seu universo.</p>
+            </div>
+            <!-- O formulário agora redireciona para feed.html -->
+            <form id="login-form" action="feed.html" method="get">
+                <div class="form-group">
+                    <label for="email">Email ou nome de usuário</label>
+                    <input type="text" id="email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
+                <div class="form-options">
+                    <a href="#" class="forgot-password">Esqueceu a senha?</a>
+                </div>
+                <button type="submit" class="btn-primary btn-login">Entrar</button>
+            </form>
+            <div class="login-footer">
+                <p>Não tem uma conta? <a href="#">Crie uma agora</a></p>
+            </div>
+        </div>
+        <div class="login-art">
+            <!-- Arte visual ou animação pode ser adicionada aqui -->
+        </div>
+    </div>
+
+    <!-- O main.js pode ser usado para futuras validações de login -->
+    <script src="js/main.js"></script>
+</body>
+</html>

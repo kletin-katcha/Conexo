@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensagens - Conectare</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Estilos específicos para o novo layout de chat */
+        .main-wrapper {
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .content-chat {
+            flex-grow: 1;
+            margin-left: 80px; /* Espaço para a sidebar principal */
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-primary-light); /* Garante que o fundo do chat seja o primário */
+        }
+
+        .dark-theme .content-chat {
+            background-color: var(--bg-primary-dark);
+        }
+
+        /* Sidebar de Amigos (substitui a lista de conversas) */
+        .friends-sidebar {
+            width: 280px; /* Largura da sidebar de amigos */
+            flex-shrink: 0;
+            background-color: var(--bg-secondary-light);
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .dark-theme .friends-sidebar {
+            background-color: var(--bg-secondary-dark);
+            border-right-color: var(--border-dark);
+        }
+
+        .friends-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .friends-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            cursor: pointer; /* Adicionado cursor pointer para indicar que é clicável */
+        }
+
+        .friend-category {
+            margin-bottom: 15px;
+            flex-grow: 1; /* Permite que a categoria de mensagens diretas ocupe espaço */
+            overflow-y: auto; /* Adiciona scroll se a lista for muito longa */
+        }
+
+        .friend-category h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-secondary-light);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .dark-theme .friend-category h3 {
+            color: var(--text-secondary-dark);
+        }
+
+        .friend-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .friend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .friend-item:hover {
+            background-color: var(--bg-primary-light);
+        }
+
+        .dark-theme .friend-item:hover {
+            background-color: var(--bg-primary-dark);
+        }
+
+        .friend-item.active {
+            background-color: var(--accent-light);
+            color: white;
+        }
+
+        .dark-theme .friend-item.active {
+            background-color: var(--accent-dark);
+        }
+
+        .friend-item.active .friend-status-dot {
+            background-color: white; /* Dot white when active */
+        }
+
+        .friend-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .friend-details {
+            flex-grow: 1;
+        }
+
+        .friend-name {
+            font-weight: 600;
+        }
+
+        .friend-status {
+            font-size: 0.8rem;
+            color: var(--text-secondary-light);
+        }
+
+        .friend-item.active .friend-status {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .dark-theme .friend-status {
+            color: var(--text-secondary-dark);
+        }
+
+        .friend-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .status-online { background-color: #4CAF50; } /* Verde */
+        .status-offline { background-color: #9E9E9E; } /* Cinza */
+        .status-away { background-color: #FFC107; } /* Amarelo */
+        .status-dnd { background-color: #F44336; } /* Vermelho (Do Not Disturb) */
+
+        /* Janela de Chat (inicialmente oculta) */
+        .chat-window.hidden {
+            display: none;
+        }
+
+        /* Mensagem de "Selecione um amigo" */
+        .no-chat-selected {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: var(--text-secondary-light);
+        }
+
+        .dark-theme .no-chat-selected {
+            color: var(--text-secondary-dark);
+        }
+
+        /* NOVO: Estilos para o novo Emoji Picker */
+        .emoji-picker-container {
+            position: absolute;
+            bottom: 70px; /* Acima da área de input */
+            left: 20px;
+            background-color: var(--bg-secondary-light);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-height: 350px;
+            overflow-y: auto;
+            width: 320px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+        .dark-theme .emoji-picker-container {
+            background-color: var(--bg-secondary-dark);
+            border-color: var(--border-dark);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .emoji-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .dark-theme .emoji-picker-header {
+            border-bottom-color: var(--border-dark);
+        }
+        .emoji-picker-header h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary-light);
+        }
+        .dark-theme .emoji-picker-header h4 {
+            color: var(--text-primary-dark);
+        }
+        .emoji-picker-header .close-emoji-picker-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary-light);
+            cursor: pointer;
+        }
+        .dark-theme .emoji-picker-header .close-emoji-picker-btn {
+            color: var(--text-secondary-dark);
+        }
+
+        .emoji-search-bar {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        .emoji-search-bar input {
+            width: 100%;
+            padding: 8px 10px 8px 35px;
+            border-radius: 20px;
+            border: 1px solid var(--border-light);
+            background-color: var(--bg-primary-light);
+            color: var(--text-primary-light);
+            font-size: 0.9rem;
+        }
+        .dark-theme .emoji-search-bar input {
+            background-color: var(--bg-primary-dark);
+            border-color: var(--border-dark);
+            color: var(--text-primary-dark);
+        }
+        .emoji-search-bar i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary-light);
+        }
+        .dark-theme .emoji-search-bar i {
+            color: var(--text-secondary-dark);
+        }
+
+        .emoji-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 5px;
+        }
+        .dark-theme .emoji-categories {
+            border-bottom-color: var(--border-dark);
+        }
+        .emoji-category-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            padding: 5px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: var(--text-secondary-light);
+        }
+        .dark-theme .emoji-category-btn {
+            color: var(--text-secondary-dark);
+        }
+        .emoji-category-btn:hover, .emoji-category-btn.active {
+            background-color: var(--bg-primary-light);
+            color: var(--accent-light);
+        }
+        .dark-theme .emoji-category-btn:hover, .dark-theme .emoji-category-btn.active {
+            background-color: var(--bg-primary-dark);
+            color: var(--accent-dark);
+        }
+
+        .emoji-grid-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 5px; /* Espaço para a scrollbar */
+        }
+        .emoji-grid-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .emoji-grid-container::-webkit-scrollbar-track {
+            background: var(--bg-primary-light);
+            border-radius: 10px;
+        }
+        .dark-theme .emoji-grid-container::-webkit-scrollbar-track {
+            background: var(--bg-primary-dark);
+        }
+        .emoji-grid-container::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 10px;
+        }
+        .dark-theme .emoji-grid-container::-webkit-scrollbar-thumb {
+            background: var(--border-dark);
+        }
+        .emoji-grid-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary-light);
+        }
+        .dark-theme .emoji-grid-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary-dark);
+        }
+
+        .emoji-category-section h5 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary-light);
+            margin-top: 10px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .dark-theme .emoji-category-section h5 {
+            color: var(--text-secondary-dark);
+        }
+        .emoji-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: flex-start;
+        }
+        .emoji-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem; /* Emojis maiores */
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        .emoji-btn:hover {
+            background-color: var(--bg-primary-light);
+        }
+        .dark-theme .emoji-btn:hover {
+            background-color: var(--bg-primary-dark);
+        }
+
+        /* NOVO: Estilos para o rodapé da sidebar de amigos e o botão */
+        .friends-sidebar-footer {
+            margin-top: auto; /* Empurra para o final da sidebar */
+            padding: 15px;
+            border-top: 1px solid var(--border-light);
+            text-align: center;
+            display: flex; /* Para alinhar o botão */
+            flex-direction: column; /* Para empilhar o botão de ver todos os amigos */
+            gap: 10px; /* Espaçamento entre os botões */
+        }
+
+        .dark-theme .friends-sidebar-footer {
+            border-top-color: var(--border-dark);
+        }
+
+        /* Estilos para o Modal de Todos os Amigos e Confirmação */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay:not(.hidden) {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary-light);
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s;
+            max-height: 90vh; /* Limita a altura do modal */
+            overflow-y: auto; /* Adiciona scroll se o conteúdo for muito grande */
+        }
+        .modal-overlay:not(.hidden) .modal-content {
+            transform: scale(1);
+        }
+        .dark-theme .modal-content {
+            background: var(--bg-secondary-dark);
+        }
+
+        .close-modal-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: var(--text-secondary-light);
+            cursor: pointer;
+            line-height: 1;
+        }
+        .dark-theme .close-modal-btn {
+            color: var(--text-secondary-dark);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .modal-friend-category {
+            margin-bottom: 15px;
+        }
+
+        .modal-friend-category h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-secondary-light);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .dark-theme .modal-friend-category h3 {
+            color: var(--text-secondary-dark);
+        }
+
+        .modal-friend-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .modal-friend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .modal-friend-item:hover {
+            background-color: var(--bg-primary-light);
+        }
+
+        .dark-theme .modal-friend-item:hover {
+            background-color: var(--bg-primary-dark);
+        }
+
+        .modal-friend-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .modal-friend-name {
+            font-weight: 600;
+        }
+
+        .modal-friend-status {
+            font-size: 0.8rem;
+            color: var(--text-secondary-light);
+        }
+
+        .dark-theme .modal-friend-status {
+            color: var(--text-secondary-dark);
+        }
+
+        .modal-friend-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        /* Estilo para mensagens em geral para adicionar espaçamento */
+        .message {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.5;
+            margin-bottom: 10px; /* Adiciona espaçamento entre as mensagens */
+        }
+
+        /* Estilo para GIFs nas mensagens */
+        .message.gif-message {
+            background-color: transparent; /* Remove background para GIFs */
+            padding: 0; /* Remove padding */
+            border: none; /* Remove borda */
+            max-width: 250px; /* Limita largura do GIF */
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra para destacar */
+        }
+        .message.gif-message img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        /* Estilos para anexos de imagem e vídeo */
+        .message.image-message,
+        .message.video-message {
+            background-color: var(--bg-secondary-light); /* Fundo para o card da mídia */
+            padding: 8px; /* Padding interno */
+            border: 1px solid var(--border-light);
+            max-width: 300px; /* Largura máxima para imagens/vídeos */
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra para destacar */
+        }
+        .dark-theme .message.image-message,
+        .dark-theme .message.video-message {
+            background-color: var(--bg-secondary-dark);
+            border-color: var(--border-dark);
+        }
+        .message.image-message img,
+        .message.video-message video {
+            max-width: 100%;
+            max-height: 200px; /* Altura máxima para imagens/vídeos */
+            object-fit: contain; /* Garante que a mídia seja contida sem cortar */
+            display: block;
+            border-radius: 6px; /* Bordas arredondadas para a mídia interna */
+        }
+        /* Estilo para mensagens de voz */
+        .message.voice-message {
+            background-color: var(--bg-secondary-light);
+            border: 1px solid var(--border-light);
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dark-theme .message.voice-message {
+            background-color: var(--bg-secondary-dark);
+            border-color: var(--border-dark);
+        }
+        .message.voice-message .fa-microphone-alt {
+            font-size: 1.2rem;
+            color: var(--accent-light);
+        }
+        .dark-theme .message.voice-message .fa-microphone-alt {
+            color: var(--accent-dark);
+        }
+
+
+        /* Estilos para o GIF Picker Modal */
+        .gif-modal-content {
+            max-width: 600px; /* Largura maior para a grade de GIFs */
+        }
+
+        .gif-search-bar {
+            margin-bottom: 15px;
+        }
+
+        .gif-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Grade responsiva para GIFs */
+            gap: 10px;
+            max-height: 400px; /* Altura máxima para a grade de GIFs */
+            overflow-y: auto;
+            padding: 5px;
+            background-color: var(--bg-primary-light);
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        .dark-theme .gif-results-grid {
+            background-color: var(--bg-primary-dark);
+            border-color: var(--border-dark);
+        }
+
+        .gif-item {
+            width: 100%;
+            height: 100px; /* Altura fixa para os itens da grade */
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 2px solid transparent; /* Borda transparente para hover */
+        }
+
+        .gif-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-color: var(--accent-light);
+        }
+
+        .dark-theme .gif-item:hover {
+            border-color: var(--accent-dark);
+        }
+
+        #gif-loading-message,
+        #gif-no-results-message {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary-light);
+        }
+
+        .dark-theme #gif-loading-message,
+        .dark-theme #gif-no-results-message {
+            color: var(--text-secondary-dark);
+        }
+
+        /* Garante que os botões na área de input do chat sejam exibidos corretamente */
+        .chat-input-area {
+            display: flex; /* Garante o layout flexível */
+            align-items: center; /* Alinha os itens verticalmente no centro */
+            gap: 10px; /* Espaçamento entre os itens */
+            padding: 15px 20px;
+            background-color: var(--bg-secondary-light);
+            border-top: 1px solid var(--border-light);
+            position: relative; /* Para posicionar o indicador de gravação */
+        }
+        .dark-theme .chat-input-area {
+            background-color: var(--bg-secondary-dark);
+            border-top-color: var(--border-dark);
+        }
+
+        .chat-input-area input[type="text"] {
+            flex-grow: 1; /* Permite que o input preencha o espaço disponível */
+            min-width: 0; /* Permite que o input encolha se necessário */
+            /* Outros estilos do input já devem estar definidos em style.css ou acima */
+        }
+
+        /* Estilo para os botões de ação na área de input (anexo, emoji, GIF, voz) */
+        .chat-input-area .action-button { /* Nova classe para agrupar os 3 botões */
+            background-color: var(--btn-secondary-bg-light); /* Fundo sólido por padrão */
+            color: var(--text-secondary-light); /* Cor do ícone */
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+            flex-shrink: 0;
+            padding: 0; /* Remove padding extra */
+        }
+        .dark-theme .chat-input-area .action-button {
+            background-color: var(--btn-secondary-bg-dark); /* Fundo sólido por padrão no tema escuro */
+            color: var(--text-secondary-dark);
+        }
+        .chat-input-area .action-button:hover {
+            background-color: var(--accent-light); /* Cor de destaque no hover */
+            color: white; /* Texto branco no hover */
+        }
+        .dark-theme .chat-input-area .action-button:hover {
+            background-color: var(--accent-dark);
+            color: white;
+        }
+
+        /* Estilo específico para o botão GIF com texto */
+        .chat-input-area #gif-toggle-btn {
+            font-size: 0.9rem; /* Tamanho da fonte para o texto "GIF" */
+            font-weight: 600;
+            width: 50px; /* Largura ajustada para o texto */
+            border-radius: 20px; /* Mais arredondado */
+            /* As cores de fundo e texto já são definidas por .action-button, mas podemos sobrescrever se quisermos um visual diferente */
+        }
+        /* Hover para o botão GIF, usando as mesmas cores de destaque */
+        .chat-input-area #gif-toggle-btn:hover {
+            background-color: var(--accent-light);
+            color: white;
+        }
+        .dark-theme .chat-input-area #gif-toggle-btn:hover {
+            background-color: var(--accent-dark);
+            color: white;
+        }
+
+        /* Estilo para o botão de enviar - MODIFICADO AQUI */
+        .chat-input-area .btn-send {
+            /* Cor de destaque para o botão de enviar */
+            background: linear-gradient(45deg, var(--accent-light), var(--accent-hover-light));
+            color: white;
+            border-radius: 50%; /* Volta a ser circular */
+            width: 45px; /* Largura e altura fixas para o ícone */
+            height: 45px;
+            padding: 0; /* Remove padding extra */
+            font-size: 1.4rem; /* Tamanho do ícone maior */
+            display: inline-flex; /* Garante que seja um flex container para centralizar o ícone */
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Sombra para destaque */
+            transition: all 0.2s ease-in-out; /* Transição suave */
+        }
+        .dark-theme .chat-input-area .btn-send {
+            background: linear-gradient(45deg, var(--accent-dark), var(--accent-hover-dark));
+        }
+        .chat-input-area .btn-send:hover {
+            transform: scale(1.1); /* Efeito de zoom no hover */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4); /* Sombra mais intensa no hover */
+        }
+        .dark-theme .chat-input-area .btn-send:hover {
+            background: linear-gradient(45deg, var(--accent-hover-dark), var(--accent-dark));
+        }
+
+        /* NOVO: Estilos para o menu de opções do chat (três pontinhos) */
+        .chat-options-menu {
+            position: absolute;
+            top: 60px; /* Ajuste conforme a altura do header */
+            right: 20px;
+            background-color: var(--bg-secondary-light);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px var(--shadow-light);
+            z-index: 100;
+            min-width: 180px;
+            padding: 10px 0;
+        }
+        .dark-theme .chat-options-menu {
+            background-color: var(--bg-secondary-dark);
+            box-shadow: 0 4px 10px var(--shadow-dark);
+        }
+        .chat-options-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .chat-options-menu li button {
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            padding: 10px 15px;
+            color: var(--text-primary-light);
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.2s;
+        }
+        .dark-theme .chat-options-menu li button {
+            color: var(--text-primary-dark);
+        }
+        .chat-options-menu li button:hover {
+            background-color: var(--bg-primary-light);
+        }
+        .dark-theme .chat-options-menu li button:hover {
+            background-color: var(--bg-primary-dark);
+        }
+        .chat-options-menu li button i {
+            font-size: 1.1rem;
+            color: var(--text-secondary-light);
+        }
+        .dark-theme .chat-options-menu li button i {
+            color: var(--text-secondary-dark);
+        }
+        .chat-options-menu li button.danger-option {
+            color: var(--btn-danger-text-light);
+        }
+        .dark-theme .chat-options-menu li button.danger-option {
+            color: var(--btn-danger-text-dark);
+        }
+        .chat-options-menu li button.danger-option i {
+            color: var(--btn-danger-text-light);
+        }
+        .dark-theme .chat-options-menu li button.danger-option i {
+            color: var(--btn-danger-text-dark);
+        }
+
+        /* Estilos para o Modal de Confirmação de Limpar Chat */
+        .confirmation-modal-content {
+            max-width: 400px;
+            text-align: center;
+        }
+        .confirmation-modal-content .form-actions {
+            justify-content: center;
+        }
+
+        /* NOVO: Estilos para o botão de mensagem de voz */
+        .chat-input-area .voice-message-btn {
+            background-color: var(--btn-secondary-bg-light);
+            color: var(--text-secondary-light);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+            flex-shrink: 0;
+            padding: 0;
+        }
+        .dark-theme .chat-input-area .voice-message-btn {
+            background-color: var(--btn-secondary-bg-dark);
+            color: var(--text-secondary-dark);
+        }
+        .chat-input-area .voice-message-btn:hover {
+            background-color: var(--accent-light);
+            color: white;
+        }
+        .dark-theme .chat-input-area .voice-message-btn:hover {
+            background-color: var(--accent-dark);
+            color: white;
+        }
+        .chat-input-area .voice-message-btn.recording {
+            background-color: #e0245e; /* Cor vermelha para indicar gravação */
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 0 5px rgba(224, 36, 94, 0.3); /* Efeito de pulso */
+        }
+
+        /* NOVO: Indicador de gravação de voz */
+        .voice-recording-indicator {
+            position: absolute;
+            bottom: 15px; /* Alinha com o input */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 10;
+            white-space: nowrap;
+        }
+        .voice-recording-indicator i {
+            color: #e0245e; /* Ícone vermelho */
+            animation: pulse-recording 1s infinite alternate;
+        }
+        @keyframes pulse-recording {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.1); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <div class="main-wrapper">
+        <!-- Sidebar Principal -->
+        <aside class="sidebar">
+            <div class="sidebar-header"><a href="feed.html" class="logo"><i class="fa-solid fa-meteor"></i></a></div>
+            <nav class="sidebar-nav">
+                <a href="feed.html" class="nav-link" title="Início"><i class="fa-solid fa-house-chimney"></i><span class="nav-text">Início</span></a>
+                <a href="search.html" class="nav-link" title="Explorar"><i class="fa-solid fa-compass"></i><span class="nav-text">Explorar</span></a>
+                <a href="comunidade.html" class="nav-link" title="Comunidades"><i class="fa-solid fa-users"></i><span class="nav-text">Comunidades</span></a>
+                <a href="notificacoes.html" class="nav-link" title="Notificações"><i class="fa-solid fa-bell"></i><span class="nav-text">Notificações</span></a>
+                <a href="chat.html" class="nav-link active" title="Mensagens"><i class="fa-solid fa-paper-plane"></i><span class="nav-text">Mensagens</span></a>
+                <a href="game.html" class="nav-link" title="Jogos"><i class="fa-solid fa-gamepad"></i><span class="nav-text">Jogos</span></a>
+                <a href="profile.html" class="nav-link" title="Perfil"><i class="fa-solid fa-user-astronaut"></i><span class="nav-text">Perfil</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <!-- O botão de configurações foi removido daqui -->
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal do Chat -->
+        <main class="content-chat">
+            <!-- Sidebar de Amigos (Estilo Discord) -->
+            <aside class="friends-sidebar">
+                <header class="friends-header">
+                    <h2 id="friends-header-title">Amigos</h2> <!-- Adicionado ID aqui -->
+                    <!-- Botão de adicionar amigo removido daqui -->
+                </header>
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="search" placeholder="Pesquisar amigos...">
+                </div>
+
+                <!-- NOVO: Seção de Mensagens Diretas -->
+                <div class="friend-category">
+                    <!-- REMOVIDO: <h3>Mensagens Diretas</h3> -->
+                    <ul class="friend-list" id="direct-messages-list">
+                        <!-- Amigos para mensagens diretas serão inseridos aqui pelo JS -->
+                    </ul>
+                </div>
+
+                <!-- NOVO: Rodapé para o botão de adicionar amigo e ver todos os amigos -->
+                <div class="friends-sidebar-footer">
+                    <button class="btn-add-friend-green"><i class="fa-solid fa-user-plus"></i> Adicionar Amigo</button>
+                    <button class="btn-secondary" id="view-all-friends-btn"><i class="fa-solid fa-users"></i> Ver Todos os Amigos</button>
+                </div>
+            </aside>
+
+            <!-- Janela de Conversa (Inicialmente oculta) -->
+            <section class="chat-window hidden" id="chat-window">
+                <header class="chat-window-header">
+                    <div class="user-info">
+                        <img src="https://placehold.co/40x40/e55c5c/white?text=A" alt="Avatar" id="chat-window-avatar">
+                        <div class="user-details">
+                            <h3 id="chat-window-name"></h3>
+                            <span id="chat-window-status"></span>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button title="Chamada de Vídeo" id="videoCallBtn"><i class="fa-solid fa-video"></i></button>
+                        <button title="Chamada de Voz" id="voiceCallBtn"><i class="fa-solid fa-phone"></i></button>
+                        <button title="Mais Opções" id="more-options-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        <!-- NOVO: Menu de opções do chat -->
+                        <div id="chat-options-menu" class="chat-options-menu hidden">
+                            <ul>
+                                <li><button id="clear-chat-btn"><i class="fa-solid fa-trash-can"></i> Limpar Conversa</button></li>
+                                <!-- Outras opções podem ser adicionadas aqui no futuro -->
+                            </ul>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="message-area" id="message-area">
+                    <!-- As mensagens serão adicionadas dinamicamente aqui -->
+                    <!-- Indicador de Digitação -->
+                    <div class="typing-indicator hidden" id="typing-indicator">
+                        <img src="https://placehold.co/30x30/e55c5c/white?text=A" alt="Avatar digitando" class="typing-avatar">
+                        <span class="typing-dots">Digitando<span>.</span><span>.</span><span>.</span></span>
+                    </div>
+                </div>
+
+                <footer class="chat-input-area">
+                    <button id="file-attachment-btn" class="action-button"><i class="fa-solid fa-paperclip"></i></button>
+                    <input type="file" id="file-attachment-input" accept="image/*,video/*" style="display: none;">
+                    <input type="text" placeholder="Digite uma mensagem..." id="chat-input">
+                    <button id="emoji-toggle-btn" class="action-button"><i class="fa-regular fa-face-smile"></i></button>
+                    <button id="gif-toggle-btn" class="action-button">GIF</button>
+                    <!-- NOVO: Botão de Mensagem de Voz -->
+                    <button id="voice-message-btn" class="voice-message-btn"><i class="fa-solid fa-microphone"></i></button>
+                    <button class="btn-send" id="send-message-btn"><i class="fa-solid fa-paper-plane"></i></button>
+
+                    <!-- NOVO: Emoji Picker Pop-up -->
+                    <div id="emoji-picker" class="emoji-picker-container hidden">
+                        <div class="emoji-picker-header">
+                            <h4>Emojis</h4>
+                            <button class="close-emoji-picker-btn">&times;</button>
+                        </div>
+                        <div class="emoji-search-bar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="search" id="emoji-search-input" placeholder="Buscar emoji...">
+                        </div>
+                        <div class="emoji-categories" id="emoji-categories-nav">
+                            <!-- Botões de categoria de emojis serão inseridos aqui -->
+                        </div>
+                        <div class="emoji-grid-container" id="emoji-grid-container">
+                            <!-- Seções de categorias e emojis serão inseridas aqui -->
+                        </div>
+                    </div>
+                    <!-- NOVO: Indicador de gravação de voz -->
+                    <div id="voice-recording-indicator" class="voice-recording-indicator hidden">
+                        <i class="fa-solid fa-microphone"></i>
+                        <span>Gravando... <span id="recording-timer">0:00</span></span>
+                    </div>
+                </footer>
+            </section>
+
+            <!-- Mensagem inicial quando nenhum chat está selecionado -->
+            <div class="no-chat-selected" id="no-chat-selected-message">
+                Selecione um amigo para começar a conversar.
+            </div>
+        </main>
+    </div>
+
+    <!-- NOVO: Modal para Ver Todos os Amigos -->
+    <div id="all-friends-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="close-modal-btn" id="all-friends-modal-close-btn">&times;</button>
+            <h2>Todos os Amigos</h2>
+
+            <div class="modal-friend-category">
+                <h3>Online</h3>
+                <ul class="modal-friend-list" id="modal-online-friends-list">
+                    <!-- Amigos online serão inseridos aqui pelo JS -->
+                </ul>
+            </div>
+
+            <div class="modal-friend-category">
+                <h3>Offline</h3>
+                <ul class="modal-friend-list" id="modal-offline-friends-list">
+                    <!-- Amigos offline serão inseridos aqui pelo JS -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== GIF Picker Modal (NOVO) ===== -->
+    <div id="gif-picker-modal" class="modal-overlay hidden">
+        <div class="modal-content gif-modal-content">
+            <button class="close-modal-btn" id="close-gif-picker">&times;</button>
+            <h2>Adicionar GIF</h2>
+            <div class="search-bar gif-search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" id="gif-search-input" placeholder="Buscar GIFs...">
+            </div>
+            <div class="gif-results-grid" id="gif-results-container">
+                <!-- GIFs serão carregados dinamicamente aqui -->
+            </div>
+            <p id="gif-loading-message" class="hidden">Carregando GIFs...</p>
+            <p id="gif-no-results-message" class="hidden">Nenhum GIF encontrado.</p>
+        </div>
+    </div>
+
+    <!-- NOVO: Modal de Confirmação para Limpar Chat -->
+    <div id="clear-chat-confirmation-modal" class="modal-overlay hidden">
+        <div class="modal-content confirmation-modal-content">
+            <button class="close-modal-btn" id="clear-chat-confirm-modal-close-btn">&times;</button>
+            <h2>Limpar Conversa?</h2>
+            <p>Tem certeza de que deseja limpar todas as mensagens desta conversa? Esta ação não pode ser desfeita.</p>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" id="cancel-clear-chat-btn">Cancelar</button>
+                <button type="button" class="btn-danger" id="confirm-clear-chat-btn">Limpar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Draggable Floating Music Player ===== -->
+    <div id="music-player-fab">
+        <div id="music-player-panel" class="hidden">
+            <div class="player-header">
+                <span>Tocando agora</span>
+                <button id="playlist-toggle-btn" title="Ver Playlist"><i class="fa-solid fa-list-ol"></i></button>
+            </div>
+            <div class="track-info">
+                <img id="track-artwork" src="https://placehold.co/80x80/2a2a2e/white?text=Music" alt="Capa do Álbum">
+                <div class="track-details">
+                    <h3 id="track-title">Selecione uma música</h3>
+                    <p id="track-artist">Artista Desconhecido</p>
+                </div>
+            </div>
+            <div class="player-controls">
+                <button id="prev-track-btn"><i class="fa-solid fa-backward-step"></i></button>
+                <button id="play-pause-btn"><i class="fa-solid fa-play"></i></button>
+                <button id="next-track-btn"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <div class="volume-control">
+                <i class="fa-solid fa-volume-low"></i>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
+                <i class="fa-solid fa-volume-high"></i>
+            </div>
+            <div id="playlist-view" class="hidden">
+                <h5>Próximas na Fila</h5>
+                <ul>
+                    <!-- Itens da playlist serão inseridos aqui -->
+                </ul>
+            </div>
+        </div>
+        <button id="music-toggle-fab" title="Player de Música">
+            <img src="https://placehold.co/80x80/2a2a2e/white?text=Music" alt="Capa da música no player">
+        </button>
+    </div>
+    <audio id="audio-element"></audio>
+
+    <script src="js/main.js"></script>
+    <script src="js/chat.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const videoCallBtn = document.getElementById('videoCallBtn');
+            const voiceCallBtn = document.getElementById('voiceCallBtn');
+            const viewAllFriendsBtn = document.getElementById('view-all-friends-btn'); // NOVO: Botão Ver Todos os Amigos
+            const allFriendsModal = document.getElementById('all-friends-modal'); // NOVO: Modal de Todos os Amigos
+            const allFriendsModalCloseBtn = document.getElementById('all-friends-modal-close-btn'); // NOVO: Botão de fechar modal
+
+            // Função para obter o ID do chat ativo
+            function getActiveChatId() {
+                const activeFriendItem = document.querySelector('.friend-item.active');
+                return activeFriendItem ? activeFriendItem.dataset.friendId : null;
+            }
+
+            // Adiciona event listener para o botão de chamada de vídeo
+            if (videoCallBtn) {
+                videoCallBtn.addEventListener('click', () => {
+                    const activeChatId = getActiveChatId();
+                    let callPage = '';
+
+                    if (activeChatId === 'ana') {
+                        callPage = 'call-feminina.html';
+                    } else if (activeChatId === 'carlos') {
+                        callPage = 'call-masculina.html';
+                    } else {
+                        console.warn('Nenhum chat ativo ou chat desconhecido para iniciar chamada.');
+                        return;
+                    }
+                    window.location.href = `${callPage}?type=video`;
+                });
+            }
+
+            // Adiciona event listener para o botão de chamada de voz
+            if (voiceCallBtn) {
+                voiceCallBtn.addEventListener('click', () => {
+                    const activeChatId = getActiveChatId();
+                    let callPage = '';
+
+                    if (activeChatId === 'ana') {
+                        callPage = 'call-feminina.html';
+                    } else if (activeChatId === 'carlos') {
+                        callPage = 'call-masculina.html';
+                    } else {
+                        console.warn('Nenhum chat ativo ou chat desconhecido para iniciar chamada.');
+                        return;
+                    }
+                    window.location.href = `${callPage}?type=voice`;
+                });
+            }
+
+            // NOVO: Event listener para abrir o modal de todos os amigos
+            if (viewAllFriendsBtn) {
+                viewAllFriendsBtn.addEventListener('click', () => {
+                    allFriendsModal.classList.remove('hidden');
+                    Chat.renderAllFriendsInModal();
+                });
+            }
+
+            // NOVO: Event listener para fechar o modal de todos os amigos
+            if (allFriendsModalCloseBtn) {
+                allFriendsModalCloseBtn.addEventListener('click', () => {
+                    allFriendsModal.classList.add('hidden');
+                });
+            }
+            // Fechar modal clicando fora do conteúdo
+            if (allFriendsModal) {
+                allFriendsModal.addEventListener('click', (e) => {
+                    if (e.target === allFriendsModal) {
+                        allFriendsModal.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
