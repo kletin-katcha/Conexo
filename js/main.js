@@ -107,7 +107,7 @@ const MusicPlayer = {
         { title: "Comfort", artist: "Aventure (Bensound)", src: "https://www.bensound.com/bensound-music/bensound-comfort.mp3", artwork: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=200&auto=format&fit=crop" }, // Exemplo de artwork
         { title: "Orange Clouds", artist: "Aventure (Bensound)", src: "https://www.bensound.com/bensound-music/bensound-orangeclouds.mp3", artwork: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=200&auto=format&fit=crop" }, // Exemplo de artwork
         { title: "The Sunday", artist: "Melatone (Bensound)", src: "https://www.bensound.com/bensound-music/bensound-thesunday.mp3", artwork: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=200&auto=format&fit=crop" }, // Exemplo de artwork
-        { title: "Caramel", artist: "Sleep Token", src: "../music/Caramel.mp3", artwork: "../images/Caramel.jpg" } // Exemplo de artwork
+        { title: "Caramel", artist: "Sleep Token", src: "music/Caramel.mp3", artwork: "images/Caramel.jpg" } // Exemplo de artwork
 
     ],
 
